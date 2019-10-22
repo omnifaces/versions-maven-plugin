@@ -40,10 +40,8 @@ import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
  * @author Stephen Connolly
  * @since 1.0-beta-1
  */
-@Mojo( name = "display-property-updates", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class DisplayPropertyUpdatesMojo
-    extends AbstractVersionsDisplayMojo
-{
+@Mojo(name = "display-property-updates", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class DisplayPropertyUpdatesMojo extends AbstractVersionsDisplayMojo {
 
     /**
      * The width to pad info messages.
@@ -67,7 +65,7 @@ public class DisplayPropertyUpdatesMojo
      *
      * @since 1.0-alpha-1
      */
-    @Parameter( property = "includeProperties" )
+    @Parameter(property = "includeProperties")
     private String includeProperties = null;
 
     /**
@@ -76,7 +74,7 @@ public class DisplayPropertyUpdatesMojo
      * @parameter property="excludeProperties"
      * @since 1.0-alpha-1
      */
-    @Parameter( property = "excludeProperties" )
+    @Parameter(property = "excludeProperties")
     private String excludeProperties = null;
 
     /**
@@ -84,7 +82,7 @@ public class DisplayPropertyUpdatesMojo
      *
      * @since 1.0-alpha-2
      */
-    @Parameter( property = "autoLinkItems", defaultValue = "true" )
+    @Parameter(property = "autoLinkItems", defaultValue = "true")
     private boolean autoLinkItems;
 
     /**
@@ -92,7 +90,7 @@ public class DisplayPropertyUpdatesMojo
      *
      * @since 2.5
      */
-    @Parameter( property = "allowMajorUpdates", defaultValue = "true" )
+    @Parameter(property = "allowMajorUpdates", defaultValue = "true")
     private boolean allowMajorUpdates;
 
     /**
@@ -100,7 +98,7 @@ public class DisplayPropertyUpdatesMojo
      *
      * @since 2.5
      */
-    @Parameter( property = "allowMinorUpdates", defaultValue = "true" )
+    @Parameter(property = "allowMinorUpdates", defaultValue = "true")
     private boolean allowMinorUpdates;
 
     /**
@@ -108,105 +106,89 @@ public class DisplayPropertyUpdatesMojo
      *
      * @since 2.5
      */
-    @Parameter( property = "allowIncrementalUpdates", defaultValue = "true" )
+    @Parameter(property = "allowIncrementalUpdates", defaultValue = "true")
     private boolean allowIncrementalUpdates;
 
     // -------------------------- STATIC METHODS --------------------------
 
     // -------------------------- OTHER METHODS --------------------------
 
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
         logInit();
         List<String> current = new ArrayList<>();
         List<String> updates = new ArrayList<>();
 
-        Map<Property, PropertyVersions> propertyVersions =
-            this.getHelper().getVersionPropertiesMap( getProject(), properties, includeProperties, excludeProperties,
-                                                      autoLinkItems );
-        for ( Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet() )
-        {
+        Map<Property, PropertyVersions> propertyVersions = this.getHelper().getVersionPropertiesMap(getProject(), properties, includeProperties,
+                excludeProperties, autoLinkItems);
+        for (Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet()) {
             Property property = entry.getKey();
             PropertyVersions version = entry.getValue();
 
-            final String currentVersion = getProject().getProperties().getProperty( property.getName() );
-            if ( currentVersion == null )
-            {
+            final String currentVersion = getProject().getProperties().getProperty(property.getName());
+            if (currentVersion == null) {
                 continue;
             }
 
-            int segment = determineUnchangedSegment( allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates );
-            ArtifactVersion winner = version.getNewestVersion( currentVersion, property, this.allowSnapshots,
-                                                               this.reactorProjects, this.getHelper(), false, segment );
+            int segment = determineUnchangedSegment(allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates);
+            ArtifactVersion winner = version.getNewestVersion(currentVersion, property, this.allowSnapshots, this.reactorProjects, this.getHelper(), false,
+                    segment);
 
-            if ( winner != null && !currentVersion.equals( winner.toString() ) )
-            {
+            if (winner != null && !currentVersion.equals(winner.toString())) {
                 StringBuilder buf = new StringBuilder();
-                buf.append( "${" );
-                buf.append( property.getName() );
-                buf.append( "} " );
+                buf.append("${");
+                buf.append(property.getName());
+                buf.append("} ");
                 final String newVersion = winner.toString();
                 int padding = INFO_PAD_SIZE - currentVersion.length() - newVersion.length() - 4;
-                while ( buf.length() < padding )
-                {
-                    buf.append( '.' );
+                while (buf.length() < padding) {
+                    buf.append('.');
                 }
-                buf.append( ' ' );
-                buf.append( currentVersion );
-                buf.append( " -> " );
-                buf.append( newVersion );
-                updates.add( buf.toString() );
-            }
-            else
-            {
+                buf.append(' ');
+                buf.append(currentVersion);
+                buf.append(" -> ");
+                buf.append(newVersion);
+                updates.add(buf.toString());
+            } else {
                 StringBuilder buf = new StringBuilder();
-                buf.append( "${" );
-                buf.append( property.getName() );
-                buf.append( "} " );
+                buf.append("${");
+                buf.append(property.getName());
+                buf.append("} ");
                 int padding = INFO_PAD_SIZE - currentVersion.length();
-                while ( buf.length() < padding )
-                {
-                    buf.append( '.' );
+                while (buf.length() < padding) {
+                    buf.append('.');
                 }
-                buf.append( ' ' );
-                buf.append( currentVersion );
-                current.add( buf.toString() );
+                buf.append(' ');
+                buf.append(currentVersion);
+                current.add(buf.toString());
             }
 
         }
 
-        logLine( false, "" );
-        if ( !current.isEmpty() )
-        {
-            logLine( false, "The following version properties are referencing the newest available version:" );
-            for ( String s : current )
-            {
-                logLine( false, "  " + s );
+        logLine(false, "");
+        if (!current.isEmpty()) {
+            logLine(false, "The following version properties are referencing the newest available version:");
+            for (String s : current) {
+                logLine(false, "  " + s);
             }
         }
-        if ( updates.isEmpty() && current.isEmpty() )
-        {
-            logLine( false, "This project does not have any properties associated with versions." );
-        }
-        else if ( updates.isEmpty() )
-        {
-            logLine( false, "All version properties are referencing the newest version available." );
+        if (updates.isEmpty() && current.isEmpty()) {
+            logLine(false, "This project does not have any properties associated with versions.");
+        } else if (updates.isEmpty()) {
+            logLine(false, "All version properties are referencing the newest version available.");
         }
 
-        if ( !updates.isEmpty() )
-        {
-            logLine( false, "The following version property updates are available:" );
-            for ( String update : updates )
-            {
-                logLine( false, "  " + update );
+        if (!updates.isEmpty()) {
+            logLine(false, "The following version property updates are available:");
+            for (String update : updates) {
+                logLine(false, "  " + update);
             }
         }
-        logLine( false, "" );
+        logLine(false, "");
     }
 
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException, ArtifactMetadataRetrievalException
-    {
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom)
+            throws MojoExecutionException, MojoFailureException, XMLStreamException, ArtifactMetadataRetrievalException {
     }
 }

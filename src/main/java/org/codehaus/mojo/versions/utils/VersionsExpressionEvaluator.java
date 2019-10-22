@@ -33,14 +33,8 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator
  * @author Stephen Connolly
  * @since 17-Mar-2009 08:51:42
  */
-public class VersionsExpressionEvaluator
-    extends PluginParameterExpressionEvaluator
-    implements ExpressionEvaluator
-{
-    public VersionsExpressionEvaluator( MavenSession mavenSession, PathTranslator pathTranslator,
-                                        MavenProject mavenProject )
-    {
-        super( mavenSession, new MojoExecution( new MojoDescriptor() ), pathTranslator, null, mavenProject,
-               mavenSession.getExecutionProperties() );
+public class VersionsExpressionEvaluator extends PluginParameterExpressionEvaluator implements ExpressionEvaluator {
+    public VersionsExpressionEvaluator(MavenSession mavenSession, PathTranslator pathTranslator, MavenProject mavenProject) {
+        super(mavenSession, new MojoExecution(new MojoDescriptor()), pathTranslator, null, mavenProject, mavenSession.getExecutionProperties());
     }
 }

@@ -38,12 +38,11 @@ import org.codehaus.mojo.versions.utils.PluginComparator;
 /**
  * XML renderer for PluginUpdatesReport creates an xml file in target directory and writes report about available
  * plugin/plugin management updates.
- * 
+ *
  * @author Illia Dubinin
  * @since 2.4
  */
-public class PluginUpdatesXmlRenderer
-{
+public class PluginUpdatesXmlRenderer {
 
     private static final String GROUP_ID = "groupId";
 
@@ -65,9 +64,8 @@ public class PluginUpdatesXmlRenderer
 
     private String outputFileName;
 
-    public PluginUpdatesXmlRenderer( Map<Plugin, PluginUpdatesDetails> pluginUpdates,
-                                     Map<Plugin, PluginUpdatesDetails> pluginManagementUpdates, String outputFileName )
-    {
+    public PluginUpdatesXmlRenderer(Map<Plugin, PluginUpdatesDetails> pluginUpdates, Map<Plugin, PluginUpdatesDetails> pluginManagementUpdates,
+            String outputFileName) {
         this.pluginUpdates = pluginUpdates;
         this.pluginManagementUpdates = pluginManagementUpdates;
         this.outputFileName = outputFileName;
@@ -75,65 +73,52 @@ public class PluginUpdatesXmlRenderer
 
     /**
      * Makes report file with given name in target directory.
-     * 
+     *
      * @throws MavenReportException if something went wrong
      */
-    public void render()
-        throws MavenReportException
-    {
+    public void render() throws MavenReportException {
         StringBuilder sb = new StringBuilder();
-        sb.append( "<PluginUpdatesReport>" ).append( NL );
-        Map<Plugin, PluginUpdatesDetails> allUpdates =
-            new TreeMap<Plugin, PluginUpdatesDetails>( new PluginComparator() );
-        allUpdates.putAll( pluginManagementUpdates );
-        allUpdates.putAll( pluginUpdates );
-        sb.append( getSummaryBlock( allUpdates ) );
-        sb.append( getPluginsInfoBlock( pluginManagementUpdates, "pluginManagements", "pluginManagement" ) );
-        sb.append( getPluginsInfoBlock( pluginUpdates, "plugins", "plugin" ) );
-        sb.append( "</PluginUpdatesReport>" ).append( NL );
+        sb.append("<PluginUpdatesReport>").append(NL);
+        Map<Plugin, PluginUpdatesDetails> allUpdates = new TreeMap<>(new PluginComparator());
+        allUpdates.putAll(pluginManagementUpdates);
+        allUpdates.putAll(pluginUpdates);
+        sb.append(getSummaryBlock(allUpdates));
+        sb.append(getPluginsInfoBlock(pluginManagementUpdates, "pluginManagements", "pluginManagement"));
+        sb.append(getPluginsInfoBlock(pluginUpdates, "plugins", "plugin"));
+        sb.append("</PluginUpdatesReport>").append(NL);
         PrintWriter pw;
-        try
-        {
-            pw = new PrintWriter( outputFileName, "UTF8" );
-            pw.print( sb.toString() );
+        try {
+            pw = new PrintWriter(outputFileName, "UTF8");
+            pw.print(sb.toString());
             pw.close();
-        }
-        catch ( IOException e )
-        {
-            throw new MavenReportException( "Cannot create xml report.", e );
+        } catch (IOException e) {
+            throw new MavenReportException("Cannot create xml report.", e);
         }
     }
 
-    private static String getSummaryBlock( Map<Plugin, PluginUpdatesDetails> allUpdates )
-    {
-        Collection<ArtifactVersions> allVersions = new ArrayList<ArtifactVersions>();
-        for ( PluginUpdatesDetails details : allUpdates.values() )
-        {
-            allVersions.add( details.getArtifactVersions() );
+    private static String getSummaryBlock(Map<Plugin, PluginUpdatesDetails> allUpdates) {
+        Collection<ArtifactVersions> allVersions = new ArrayList<>();
+        for (PluginUpdatesDetails details : allUpdates.values()) {
+            allVersions.add(details.getArtifactVersions());
         }
-        return DependencyUpdatesXmlRenderer.getSummaryBlock( allVersions );
+        return DependencyUpdatesXmlRenderer.getSummaryBlock(allVersions);
     }
 
-    private static String getPluginsInfoBlock( Map<Plugin, PluginUpdatesDetails> pluginUpdates, String blockName,
-                                               String subblockName )
-    {
+    private static String getPluginsInfoBlock(Map<Plugin, PluginUpdatesDetails> pluginUpdates, String blockName, String subblockName) {
         StringBuilder sBuilder = new StringBuilder();
-        sBuilder.append( TAB ).append( OPEN_TAG ).append( blockName ).append( CLOSE_TAG ).append( NL );
-        for ( Entry<Plugin, PluginUpdatesDetails> entry : pluginUpdates.entrySet() )
-        {
-            sBuilder.append( TAB ).append( TAB ).append( OPEN_TAG ).append( subblockName ).append( CLOSE_TAG ).append( NL );
+        sBuilder.append(TAB).append(OPEN_TAG).append(blockName).append(CLOSE_TAG).append(NL);
+        for (Entry<Plugin, PluginUpdatesDetails> entry : pluginUpdates.entrySet()) {
+            sBuilder.append(TAB).append(TAB).append(OPEN_TAG).append(subblockName).append(CLOSE_TAG).append(NL);
 
             Plugin plugin = entry.getKey();
-            sBuilder.append( TAB ).append( TAB ).append( TAB ).append( wrapElement( plugin.getGroupId(),
-                                                                                    GROUP_ID ) ).append( NL );
-            sBuilder.append( TAB ).append( TAB ).append( TAB ).append( wrapElement( plugin.getArtifactId(),
-                                                                                    ARTIFACT_ID ) ).append( NL );
+            sBuilder.append(TAB).append(TAB).append(TAB).append(wrapElement(plugin.getGroupId(), GROUP_ID)).append(NL);
+            sBuilder.append(TAB).append(TAB).append(TAB).append(wrapElement(plugin.getArtifactId(), ARTIFACT_ID)).append(NL);
 
-            sBuilder.append( getVersionsBlocks( entry.getValue().getArtifactVersions() ) );
+            sBuilder.append(getVersionsBlocks(entry.getValue().getArtifactVersions()));
 
-            sBuilder.append( TAB ).append( TAB ).append( OPEN_CLOSING_TAG ).append( subblockName ).append( CLOSE_TAG ).append( NL );
+            sBuilder.append(TAB).append(TAB).append(OPEN_CLOSING_TAG).append(subblockName).append(CLOSE_TAG).append(NL);
         }
-        sBuilder.append( TAB ).append( OPEN_CLOSING_TAG ).append( blockName ).append( CLOSE_TAG ).append( NL );
+        sBuilder.append(TAB).append(OPEN_CLOSING_TAG).append(blockName).append(CLOSE_TAG).append(NL);
         return sBuilder.toString();
     }
 

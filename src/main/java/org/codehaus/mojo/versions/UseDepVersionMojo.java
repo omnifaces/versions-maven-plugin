@@ -20,7 +20,6 @@ package org.codehaus.mojo.versions;
  */
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -39,91 +38,73 @@ import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
  * @author Dan Arcari
  * @since 2.3
  */
-@Mojo( name = "use-dep-version", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UseDepVersionMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "use-dep-version", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UseDepVersionMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     /**
      * The exact version to be applied for the included dependencies
      */
-    @Parameter( property = "depVersion", required = true )
+    @Parameter(property = "depVersion", required = true)
     protected String depVersion;
 
     /**
      * If set to true, will use whatever version is supplied without attempting to validate that such a version is
      * obtainable from the repository chain.
      */
-    @Parameter( property = "forceVersion", defaultValue = "false" )
+    @Parameter(property = "forceVersion", defaultValue = "false")
     protected boolean forceVersion;
 
-    @SuppressWarnings( "unchecked" )
+    @SuppressWarnings("unchecked")
     @Override
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException, ArtifactMetadataRetrievalException
-    {
+    protected void update(ModifiedPomXMLEventReader pom)
+            throws MojoExecutionException, MojoFailureException, XMLStreamException, ArtifactMetadataRetrievalException {
 
-        if ( depVersion == null || depVersion.equals( "" ) )
-        {
-            throw new IllegalArgumentException( "depVersion must be supplied with use-specific-version, and cannot be blank." );
+        if (depVersion == null || depVersion.equals("")) {
+            throw new IllegalArgumentException("depVersion must be supplied with use-specific-version, and cannot be blank.");
         }
 
-        if ( !forceVersion && !hasIncludes() )
-        {
-            throw new IllegalArgumentException( "The use-specific-version goal is intended to be used with a single artifact. Please specify a value for the 'includes' parameter, or use -DforceVersion=true to override this check." );
+        if (!forceVersion && !hasIncludes()) {
+            throw new IllegalArgumentException(
+                    "The use-specific-version goal is intended to be used with a single artifact. Please specify a value for the 'includes' parameter, or use -DforceVersion=true to override this check.");
         }
 
-        try
-        {
-            if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-            {
-                useDepVersion( pom, getProject().getDependencyManagement().getDependencies() );
+        try {
+            if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+                useDepVersion(pom, getProject().getDependencyManagement().getDependencies());
             }
 
-            if ( getProject().getDependencies() != null && isProcessingDependencies() )
-            {
-                useDepVersion( pom, getProject().getDependencies() );
+            if (getProject().getDependencies() != null && isProcessingDependencies()) {
+                useDepVersion(pom, getProject().getDependencies());
             }
-        }
-        catch ( ArtifactMetadataRetrievalException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        } catch (ArtifactMetadataRetrievalException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private void useDepVersion( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws MojoExecutionException, XMLStreamException, ArtifactMetadataRetrievalException
-    {
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+    private void useDepVersion(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws MojoExecutionException, XMLStreamException, ArtifactMetadataRetrievalException {
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
-            Artifact artifact = this.toArtifact( dep );
+            Artifact artifact = this.toArtifact(dep);
 
-            if ( isIncluded( artifact ) )
-            {
-                if ( !forceVersion )
-                {
-                    ArtifactVersions versions = getHelper().lookupArtifactVersions( artifact, false );
+            if (isIncluded(artifact)) {
+                if (!forceVersion) {
+                    ArtifactVersions versions = getHelper().lookupArtifactVersions(artifact, false);
 
-                    if ( !versions.containsVersion( depVersion ) )
-                    {
-                        throw new MojoExecutionException( String.format( "Version %s is not available for artifact %s:%s",
-                                                                         depVersion, artifact.getGroupId(),
-                                                                         artifact.getArtifactId() ) );
+                    if (!versions.containsVersion(depVersion)) {
+                        throw new MojoExecutionException(
+                                String.format("Version %s is not available for artifact %s:%s", depVersion, artifact.getGroupId(), artifact.getArtifactId()));
                     }
                 }
 
                 String version = dep.getVersion();
 
-                if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version, depVersion,
-                                                     getProject().getModel() ) )
-                {
-                    getLog().info( "Updated " + toString( dep ) + " to version " + depVersion );
+                if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, depVersion, getProject().getModel())) {
+                    getLog().info("Updated " + toString(dep) + " to version " + depVersion);
                 }
             }
         }

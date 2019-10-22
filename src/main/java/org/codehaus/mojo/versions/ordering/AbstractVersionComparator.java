@@ -26,55 +26,46 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
  *
  * @since 1.0-beta-1
  */
-public abstract class AbstractVersionComparator
-    implements VersionComparator
-{
+public abstract class AbstractVersionComparator implements VersionComparator {
     /**
      * {@inheritDoc}
      */
-    public abstract int compare( ArtifactVersion o1, ArtifactVersion o2 );
+    public abstract int compare(ArtifactVersion o1, ArtifactVersion o2);
 
     /**
      * {@inheritDoc}
      */
-    public final int getSegmentCount( ArtifactVersion v )
-    {
-        if ( v == null )
-        {
+    public final int getSegmentCount(ArtifactVersion v) {
+        if (v == null) {
             return 0;
         }
-        if ( VersionComparators.isSnapshot( v ) )
-        {
-            return innerGetSegmentCount( VersionComparators.stripSnapshot( v ) );
+        if (VersionComparators.isSnapshot(v)) {
+            return innerGetSegmentCount(VersionComparators.stripSnapshot(v));
         }
-        return innerGetSegmentCount( v );
+        return innerGetSegmentCount(v);
 
     }
 
-    protected abstract int innerGetSegmentCount( ArtifactVersion v );
+    protected abstract int innerGetSegmentCount(ArtifactVersion v);
 
     /**
      * {@inheritDoc}
      */
-    public final ArtifactVersion incrementSegment( ArtifactVersion v, int segment )
-    {
-        if ( VersionComparators.isSnapshot( v ) )
-        {
-            return VersionComparators.copySnapshot( v, innerIncrementSegment( VersionComparators.stripSnapshot( v ),
-                                                                              segment ) );
+    public final ArtifactVersion incrementSegment(ArtifactVersion v, int segment) {
+        if (VersionComparators.isSnapshot(v)) {
+            return VersionComparators.copySnapshot(v, innerIncrementSegment(VersionComparators.stripSnapshot(v), segment));
         }
-        return innerIncrementSegment( v, segment );
+        return innerIncrementSegment(v, segment);
     }
 
-    protected abstract ArtifactVersion innerIncrementSegment( ArtifactVersion v, int segment );
+    protected abstract ArtifactVersion innerIncrementSegment(ArtifactVersion v, int segment);
 
     /**
      * Returns a hash code value for the comparator class.
      *
      * @return the hash code.
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         return getClass().hashCode();
     }
 
@@ -86,9 +77,8 @@ public abstract class AbstractVersionComparator
      * @see #hashCode()
      * @see java.util.Hashtable
      */
-    public boolean equals( Object obj )
-    {
-        return obj == this || ( obj != null && getClass().equals( obj.getClass() ) );
+    public boolean equals(Object obj) {
+        return obj == this || (obj != null && getClass().equals(obj.getClass()));
     }
 
 }

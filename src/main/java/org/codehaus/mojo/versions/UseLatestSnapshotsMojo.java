@@ -1,5 +1,14 @@
 package org.codehaus.mojo.versions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -34,40 +43,29 @@ import org.codehaus.mojo.versions.ordering.MajorMinorIncrementalFilter;
 import org.codehaus.mojo.versions.ordering.VersionComparator;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Replaces any release versions with the latest snapshot version (if it has been deployed).
  *
  * @author Stephen Connolly
  * @since 1.0-beta-1
  */
-@Mojo( name = "use-latest-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UseLatestSnapshotsMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "use-latest-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UseLatestSnapshotsMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     /**
      * Whether to allow the major version number to be changed.
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "allowMajorUpdates", defaultValue = "false" )
+    @Parameter(property = "allowMajorUpdates", defaultValue = "false")
     protected boolean allowMajorUpdates;
 
     /**
      * Whether to allow the minor version number to be changed.
-     * 
+     *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "allowMinorUpdates", defaultValue = "false" )
+    @Parameter(property = "allowMinorUpdates", defaultValue = "false")
     protected boolean allowMinorUpdates;
 
     /**
@@ -75,7 +73,7 @@ public class UseLatestSnapshotsMojo
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "allowIncrementalUpdates", defaultValue = "true" )
+    @Parameter(property = "allowIncrementalUpdates", defaultValue = "true")
     protected boolean allowIncrementalUpdates;
 
     // ------------------------------ FIELDS ------------------------------
@@ -83,7 +81,7 @@ public class UseLatestSnapshotsMojo
     /**
      * Pattern to match a snapshot version.
      */
-    public final Pattern matchSnapshotRegex = Pattern.compile( "^(.+)-((SNAPSHOT)|(\\d{8}\\.\\d{6}-\\d+))$" );
+    public final Pattern matchSnapshotRegex = Pattern.compile("^(.+)-((SNAPSHOT)|(\\d{8}\\.\\d{6}-\\d+))$");
 
     // ------------------------------ METHODS --------------------------
 
@@ -94,116 +92,91 @@ public class UseLatestSnapshotsMojo
      * @throws javax.xml.stream.XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        try
-        {
-            if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-            {
-                useLatestSnapshots( pom, getProject().getDependencyManagement().getDependencies() );
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        try {
+            if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+                useLatestSnapshots(pom, getProject().getDependencyManagement().getDependencies());
             }
-            if ( getProject().getDependencies() != null && isProcessingDependencies() )
-            {
-                useLatestSnapshots( pom, getProject().getDependencies() );
+            if (getProject().getDependencies() != null && isProcessingDependencies()) {
+                useLatestSnapshots(pom, getProject().getDependencies());
             }
-            if ( getProject().getParent() != null && isProcessingParent() )
-            {
+            if (getProject().getParent() != null && isProcessingParent()) {
                 Dependency dependency = new Dependency();
-                dependency.setArtifactId( getProject().getParent().getArtifactId() );
-                dependency.setGroupId( getProject().getParent().getGroupId() );
-                dependency.setVersion( getProject().getParent().getVersion() );
+                dependency.setArtifactId(getProject().getParent().getArtifactId());
+                dependency.setGroupId(getProject().getParent().getGroupId());
+                dependency.setVersion(getProject().getParent().getVersion());
                 dependency.setType("pom");
                 List list = new ArrayList();
                 list.add(dependency);
-                useLatestSnapshots( pom, list );
+                useLatestSnapshots(pom, list);
             }
-        }
-        catch ( ArtifactMetadataRetrievalException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        } catch (ArtifactMetadataRetrievalException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private void useLatestSnapshots( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
-        int segment = determineUnchangedSegment( allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates );
-        MajorMinorIncrementalFilter majorMinorIncfilter =
-                new MajorMinorIncrementalFilter( allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates );
+    private void useLatestSnapshots(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
+        int segment = determineUnchangedSegment(allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates);
+        MajorMinorIncrementalFilter majorMinorIncfilter = new MajorMinorIncrementalFilter(allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates);
 
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
             String version = dep.getVersion();
             Matcher versionMatcher = matchSnapshotRegex.matcher(version);
-            if ( !versionMatcher.matches() )
-            {
-                getLog().debug( "Looking for latest snapshot of " + toString( dep ) );
-                Artifact artifact = this.toArtifact( dep );
-                if ( !isIncluded( artifact ) )
-                {
+            if (!versionMatcher.matches()) {
+                getLog().debug("Looking for latest snapshot of " + toString(dep));
+                Artifact artifact = this.toArtifact(dep);
+                if (!isIncluded(artifact)) {
                     continue;
                 }
 
-                ArtifactVersion selectedVersion = new DefaultArtifactVersion( version );
+                ArtifactVersion selectedVersion = new DefaultArtifactVersion(version);
 
-                ArtifactVersions versions = getHelper().lookupArtifactVersions( artifact, false );
+                ArtifactVersions versions = getHelper().lookupArtifactVersions(artifact, false);
                 final VersionComparator versionComparator = versions.getVersionComparator();
-                final DefaultArtifactVersion lowerBound = new DefaultArtifactVersion( version );
-                if ( segment + 1 > versionComparator.getSegmentCount( lowerBound ) )
-                {
-                    getLog().info( "Ignoring " + toString( dep ) + " as the version number is too short" );
+                final DefaultArtifactVersion lowerBound = new DefaultArtifactVersion(version);
+                if (segment + 1 > versionComparator.getSegmentCount(lowerBound)) {
+                    getLog().info("Ignoring " + toString(dep) + " as the version number is too short");
                     continue;
                 }
-                ArtifactVersion upperBound =
-                    segment >= 0 ? versionComparator.incrementSegment( lowerBound, segment ) : null;
-                getLog().info( "Upper bound: " + (upperBound == null ? "none" : upperBound.toString() ) );
-                ArtifactVersion[] newer = versions.getVersions( lowerBound, upperBound, true, false, false );
-                getLog().debug( "Candidate versions " + Arrays.asList( newer ) );
+                ArtifactVersion upperBound = segment >= 0 ? versionComparator.incrementSegment(lowerBound, segment) : null;
+                getLog().info("Upper bound: " + (upperBound == null ? "none" : upperBound.toString()));
+                ArtifactVersion[] newer = versions.getVersions(lowerBound, upperBound, true, false, false);
+                getLog().debug("Candidate versions " + Arrays.asList(newer));
 
                 String latestVersion = null;
                 ArrayList snapshotsOnly = new ArrayList();
 
-                for ( int j = 0; j < newer.length; j++ )
-                {
+                for (int j = 0; j < newer.length; j++) {
                     String newVersion = newer[j].toString();
-                    if ( matchSnapshotRegex.matcher( newVersion ).matches() )
-                    {
-                        snapshotsOnly.add( newer[j] );
+                    if (matchSnapshotRegex.matcher(newVersion).matches()) {
+                        snapshotsOnly.add(newer[j]);
                     }
                 }
                 getLog().debug("Snapshot Only versions " + snapshotsOnly.toString());
 
-                ArtifactVersion[] filteredVersions = majorMinorIncfilter.filter( selectedVersion,
-                                                                                (ArtifactVersion[]) snapshotsOnly.toArray(
-                                                                                    new ArtifactVersion[snapshotsOnly.size()] ) );
-                getLog().debug( "Filtered versions " + Arrays.asList( filteredVersions ) );
+                ArtifactVersion[] filteredVersions = majorMinorIncfilter.filter(selectedVersion,
+                        (ArtifactVersion[]) snapshotsOnly.toArray(new ArtifactVersion[snapshotsOnly.size()]));
+                getLog().debug("Filtered versions " + Arrays.asList(filteredVersions));
 
-
-                if ( filteredVersions.length > 0 )
-                {
+                if (filteredVersions.length > 0) {
                     latestVersion = filteredVersions[filteredVersions.length - 1].toString();
-                    if ( getProject().getParent() != null )
-                    {
-                        if ( artifact.getId().equals(getProject().getParentArtifact().getId()) && isProcessingParent() )
-                        {
-                            if ( PomHelper.setProjectParentVersion( pom, latestVersion.toString() ) )
-                            {
-                                getLog().debug( "Made parent update from " + version + " to " + latestVersion.toString() );
+                    if (getProject().getParent() != null) {
+                        if (artifact.getId().equals(getProject().getParentArtifact().getId()) && isProcessingParent()) {
+                            if (PomHelper.setProjectParentVersion(pom, latestVersion.toString())) {
+                                getLog().debug("Made parent update from " + version + " to " + latestVersion.toString());
                             }
                         }
                     }
 
-                    if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version,
-                                                         latestVersion, getProject().getModel() ) )
-                    {
-                        getLog().info( "Updated " + toString( dep ) + " to version " + latestVersion );
+                    if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, latestVersion, getProject().getModel())) {
+                        getLog().info("Updated " + toString(dep) + " to version " + latestVersion);
                     }
                 }
             }

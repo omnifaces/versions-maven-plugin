@@ -1,5 +1,9 @@
 package org.codehaus.mojo.versions;
 
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,107 +29,83 @@ import org.codehaus.mojo.versions.api.UpdateScope;
 import org.codehaus.mojo.versions.utils.PropertyComparator;
 import org.codehaus.plexus.i18n.I18N;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * @since 1.0-beta-1
  */
-public class PropertyUpdatesRenderer
-    extends AbstractVersionsReportRenderer
-{
+public class PropertyUpdatesRenderer extends AbstractVersionsReportRenderer {
 
     private final Map<Property, PropertyVersions> propertyUpdates;
 
-    public PropertyUpdatesRenderer( Sink sink, I18N i18n, String bundleName, Locale locale,
-                                    Map<Property, PropertyVersions> propertyUpdates )
-    {
-        super( sink, bundleName, i18n, locale );
+    public PropertyUpdatesRenderer(Sink sink, I18N i18n, String bundleName, Locale locale, Map<Property, PropertyVersions> propertyUpdates) {
+        super(sink, bundleName, i18n, locale);
         this.propertyUpdates = propertyUpdates;
     }
 
-    protected void renderBody()
-    {
-        Map<Property, PropertyVersions> allUpdates = new TreeMap<>( new PropertyComparator() );
-        allUpdates.putAll( propertyUpdates );
+    @Override
+    protected void renderBody() {
+        Map<Property, PropertyVersions> allUpdates = new TreeMap<>(new PropertyComparator());
+        allUpdates.putAll(propertyUpdates);
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( getText( "report.overview.title" ) );
+        sink.text(getText("report.overview.title"));
         sink.sectionTitle1_();
         sink.paragraph();
-        sink.text( getText( "report.overview.text" ) );
+        sink.text(getText("report.overview.text"));
         sink.paragraph_();
 
-        renderSummaryTotalsTable( allUpdates );
+        renderSummaryTotalsTable(allUpdates);
 
-        renderSummaryTable( "report.overview.property", propertyUpdates, "report.overview.noProperty" );
+        renderSummaryTable("report.overview.property", propertyUpdates, "report.overview.noProperty");
 
         sink.section1_();
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( getText( "report.detail.title" ) );
+        sink.text(getText("report.detail.title"));
         sink.sectionTitle1_();
         sink.paragraph();
-        sink.text( getText( "report.detail.text" ) );
+        sink.text(getText("report.detail.text"));
         sink.paragraph_();
 
-        for ( final Map.Entry<Property, PropertyVersions> entry : allUpdates.entrySet() )
-        {
-            renderPropertyDetail( entry.getKey(), entry.getValue() );
+        for (final Map.Entry<Property, PropertyVersions> entry : allUpdates.entrySet()) {
+            renderPropertyDetail(entry.getKey(), entry.getValue());
         }
         sink.section1_();
     }
 
-    private void renderSummaryTable( String titleKey, Map<Property, PropertyVersions> contents, String emptyKey )
-    {
+    private void renderSummaryTable(String titleKey, Map<Property, PropertyVersions> contents, String emptyKey) {
         sink.section2();
         sink.sectionTitle2();
-        sink.text( getText( titleKey ) );
+        sink.text(getText(titleKey));
         sink.sectionTitle2_();
 
-        if ( contents.isEmpty() )
-        {
+        if (contents.isEmpty()) {
             sink.paragraph();
-            sink.text( getText( emptyKey ) );
+            sink.text(getText(emptyKey));
             sink.paragraph_();
-        }
-        else
-        {
-            renderPropertySummaryTable( contents );
+        } else {
+            renderPropertySummaryTable(contents);
         }
         sink.section2_();
     }
 
-    private void renderSummaryTotalsTable( Map<Property, PropertyVersions> allUpdates )
-    {
+    private void renderSummaryTotalsTable(Map<Property, PropertyVersions> allUpdates) {
         int numInc = 0;
         int numMin = 0;
         int numMaj = 0;
         int numAny = 0;
         int numCur = 0;
-        for ( PropertyVersions details : allUpdates.values() )
-        {
-            if ( details.getOldestUpdate( UpdateScope.SUBINCREMENTAL ) != null )
-            {
+        for (PropertyVersions details : allUpdates.values()) {
+            if (details.getOldestUpdate(UpdateScope.SUBINCREMENTAL) != null) {
                 numAny++;
-            }
-            else if ( details.getOldestUpdate( UpdateScope.INCREMENTAL ) != null )
-            {
+            } else if (details.getOldestUpdate(UpdateScope.INCREMENTAL) != null) {
                 numInc++;
-            }
-            else if ( details.getOldestUpdate( UpdateScope.MINOR ) != null )
-            {
+            } else if (details.getOldestUpdate(UpdateScope.MINOR) != null) {
                 numMin++;
-            }
-            else if ( details.getOldestUpdate( UpdateScope.MAJOR ) != null )
-            {
+            } else if (details.getOldestUpdate(UpdateScope.MAJOR) != null) {
                 numMaj++;
-            }
-            else
-            {
+            } else {
                 numCur++;
             }
         }
@@ -135,21 +115,10 @@ public class PropertyUpdatesRenderer
         renderSuccessIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numUpToDate" ) );
+        sink.text(getText("report.overview.numUpToDate"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numCur ) );
-        sink.tableCell_();
-        sink.tableRow_();
-        sink.tableRow();
-        sink.tableCell();
-        renderWarningIcon();
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( getText( "report.overview.numNewerVersionAvailable" ) );
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( Integer.toString( numAny ) );
+        sink.text(Integer.toString(numCur));
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
@@ -157,21 +126,10 @@ public class PropertyUpdatesRenderer
         renderWarningIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numNewerIncrementalAvailable" ) );
+        sink.text(getText("report.overview.numNewerVersionAvailable"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numInc ) );
-        sink.tableCell_();
-        sink.tableRow_();
-        sink.tableRow();
-        sink.tableCell();
-        renderWarningIcon();
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( getText( "report.overview.numNewerMinorAvailable" ) );
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( Integer.toString( numMin ) );
+        sink.text(Integer.toString(numAny));
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
@@ -179,22 +137,43 @@ public class PropertyUpdatesRenderer
         renderWarningIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numNewerMajorAvailable" ) );
+        sink.text(getText("report.overview.numNewerIncrementalAvailable"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numMaj ) );
+        sink.text(Integer.toString(numInc));
+        sink.tableCell_();
+        sink.tableRow_();
+        sink.tableRow();
+        sink.tableCell();
+        renderWarningIcon();
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(getText("report.overview.numNewerMinorAvailable"));
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(Integer.toString(numMin));
+        sink.tableCell_();
+        sink.tableRow_();
+        sink.tableRow();
+        sink.tableCell();
+        renderWarningIcon();
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(getText("report.overview.numNewerMajorAvailable"));
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(Integer.toString(numMaj));
         sink.tableCell_();
         sink.tableRow_();
         sink.table_();
     }
 
-    private void renderPropertyDetail( Property property, PropertyVersions versions )
-    {
+    private void renderPropertyDetail(Property property, PropertyVersions versions) {
         sink.section2();
         sink.sectionTitle2();
-        sink.text( "${" + property.getName() + "" );
+        sink.text("${" + property.getName() + "");
         sink.sectionTitle2_();
-        renderPropertyDetailTable( property, versions );
+        renderPropertyDetailTable(property, versions);
         sink.section2_();
     }
 

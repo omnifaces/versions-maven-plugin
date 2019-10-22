@@ -1,5 +1,11 @@
 package org.codehaus.mojo.versions;
 
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,29 +36,21 @@ import org.codehaus.mojo.versions.api.ArtifactVersions;
 import org.codehaus.mojo.versions.api.PomHelper;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Replaces any -SNAPSHOT versions with a release version, older if necessary (if there has been a release).
  *
  * @author Stephen Connolly
  * @since 2.2
  */
-@Mojo( name = "force-releases", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class ForceReleasesMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "force-releases", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class ForceReleasesMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     // ------------------------------ FIELDS ------------------------------
 
     /**
      * Pattern to match a snapshot version.
      */
-    public final Pattern matchSnapshotRegex = Pattern.compile( "^(.+)-((SNAPSHOT)|(\\d{8}\\.\\d{6}-\\d+))$" );
+    public final Pattern matchSnapshotRegex = Pattern.compile("^(.+)-((SNAPSHOT)|(\\d{8}\\.\\d{6}-\\d+))$");
 
     // ------------------------------ METHODS --------------------------
 
@@ -63,69 +61,50 @@ public class ForceReleasesMojo
      * @throws javax.xml.stream.XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        try
-        {
-            if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-            {
-                useReleases( pom, getProject().getDependencyManagement().getDependencies() );
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        try {
+            if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+                useReleases(pom, getProject().getDependencyManagement().getDependencies());
             }
-            if ( getProject().getDependencies() != null && isProcessingDependencies() )
-            {
-                useReleases( pom, getProject().getDependencies() );
+            if (getProject().getDependencies() != null && isProcessingDependencies()) {
+                useReleases(pom, getProject().getDependencies());
             }
-        }
-        catch ( ArtifactMetadataRetrievalException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        } catch (ArtifactMetadataRetrievalException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private void useReleases( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+    private void useReleases(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
             String version = dep.getVersion();
-            Matcher versionMatcher = matchSnapshotRegex.matcher( version );
-            if ( versionMatcher.matches() )
-            {
-                String releaseVersion = versionMatcher.group( 1 );
-                Artifact artifact = this.toArtifact( dep );
-                if ( !isIncluded( artifact ) )
-                {
+            Matcher versionMatcher = matchSnapshotRegex.matcher(version);
+            if (versionMatcher.matches()) {
+                String releaseVersion = versionMatcher.group(1);
+                Artifact artifact = this.toArtifact(dep);
+                if (!isIncluded(artifact)) {
                     continue;
                 }
 
-                getLog().debug( "Looking for a release of " + toString( dep ) );
-                ArtifactVersions versions = getHelper().lookupArtifactVersions( artifact, false );
-                if ( versions.containsVersion( releaseVersion ) )
-                {
-                    if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version,
-                                                         releaseVersion, getProject().getModel() ) )
-                    {
-                        getLog().info( "Updated " + toString( dep ) + " to version " + releaseVersion );
+                getLog().debug("Looking for a release of " + toString(dep));
+                ArtifactVersions versions = getHelper().lookupArtifactVersions(artifact, false);
+                if (versions.containsVersion(releaseVersion)) {
+                    if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, releaseVersion, getProject().getModel())) {
+                        getLog().info("Updated " + toString(dep) + " to version " + releaseVersion);
                     }
-                }
-                else
-                {
-                    ArtifactVersion[] v = versions.getVersions( false );
-                    if ( v.length == 0 )
-                    {
-                        getLog().info( "No release of " + toString( dep ) + " to force." );
-                    }
-                    else if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version,
-                                                              v[v.length - 1].toString(), getProject().getModel() ) )
-                    {
-                        getLog().info( "Reverted " + toString( dep ) + " to version " + v[v.length - 1].toString() );
+                } else {
+                    ArtifactVersion[] v = versions.getVersions(false);
+                    if (v.length == 0) {
+                        getLog().info("No release of " + toString(dep) + " to force.");
+                    } else if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, v[v.length - 1].toString(),
+                            getProject().getModel())) {
+                        getLog().info("Reverted " + toString(dep) + " to version " + v[v.length - 1].toString());
                     }
                 }
             }

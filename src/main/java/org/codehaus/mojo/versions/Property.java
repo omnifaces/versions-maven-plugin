@@ -27,8 +27,7 @@ import org.apache.maven.model.Dependency;
  * @author Stephen Connolly
  * @since 1.0-alpha-3
  */
-public class Property
-{
+public class Property {
     /**
      * The property that defines the version of the artifact to use.
      *
@@ -72,9 +71,9 @@ public class Property
     private boolean searchReactor;
 
     /**
-     * When {@link #searchReactor} is <code>true</code> and a property version can be entirely satisfied from the
-     * reactor and this setting is <code>true</code> then the reactor version will be specified irrespective of any
-     * other settings (including {@link #banSnapshots}).
+     * When {@link #searchReactor} is <code>true</code> and a property version can be entirely satisfied from the reactor
+     * and this setting is <code>true</code> then the reactor version will be specified irrespective of any other settings
+     * (including {@link #banSnapshots}).
      *
      * @parameter default-value="true"
      * @since 1.0-alpha-3
@@ -91,13 +90,11 @@ public class Property
 
     private static final Dependency[] EMPTY_DEPENDENCY_ARRAY = new Dependency[0];
 
-    public Property()
-    {
+    public Property() {
         this.autoLinkDependencies = true;
     }
 
-    public Property( String name )
-    {
+    public Property(String name) {
         this.name = name;
         this.autoLinkDependencies = true;
         this.dependencies = EMPTY_DEPENDENCY_ARRAY;
@@ -107,73 +104,59 @@ public class Property
         this.version = null;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName( String name )
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion( String version )
-    {
+    public void setVersion(String version) {
         this.version = version;
     }
 
-    public boolean isAutoLinkDependencies()
-    {
+    public boolean isAutoLinkDependencies() {
         return autoLinkDependencies;
     }
 
-    public void setAutoLinkDependencies( boolean autoLinkDependencies )
-    {
+    public void setAutoLinkDependencies(boolean autoLinkDependencies) {
         this.autoLinkDependencies = autoLinkDependencies;
     }
 
-    public Dependency[] getDependencies()
-    {
+    public Dependency[] getDependencies() {
         return dependencies;
     }
 
-    public void setDependencies( Dependency[] dependencies )
-    {
+    public void setDependencies(Dependency[] dependencies) {
         this.dependencies = dependencies;
     }
 
-    public boolean isSearchReactor()
-    {
+    public boolean isSearchReactor() {
         return searchReactor;
     }
 
-    public void setSearchReactor( boolean searchReactor )
-    {
+    public void setSearchReactor(boolean searchReactor) {
         this.searchReactor = searchReactor;
     }
 
-    public boolean isPreferReactor()
-    {
+    public boolean isPreferReactor() {
         return preferReactor;
     }
 
-    public void setPreferReactor( boolean preferReactor )
-    {
+    public void setPreferReactor(boolean preferReactor) {
         this.preferReactor = preferReactor;
     }
 
-    public boolean isBanSnapshots()
-    {
+    public boolean isBanSnapshots() {
         return banSnapshots;
     }
 
-    public void setBanSnapshots( boolean banSnapshots )
-    {
+    public void setBanSnapshots(boolean banSnapshots) {
         this.banSnapshots = banSnapshots;
     }
 }

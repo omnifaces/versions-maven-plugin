@@ -40,10 +40,8 @@ import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
  * @author Stephen Connolly
  * @since 2.2
  */
-@Mojo( name = "use-reactor", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UseReactorMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "use-reactor", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UseReactorMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     // ------------------------------ METHODS --------------------------
 
@@ -54,52 +52,39 @@ public class UseReactorMojo
      * @throws javax.xml.stream.XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        try
-        {
-            if ( isProcessingParent() && getProject().hasParent() ) {
-                useReactor( pom, getProject().getParent() );
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        try {
+            if (isProcessingParent() && getProject().hasParent()) {
+                useReactor(pom, getProject().getParent());
             }
-            if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-            {
-                useReactor( pom, getProject().getDependencyManagement().getDependencies() );
+            if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+                useReactor(pom, getProject().getDependencyManagement().getDependencies());
             }
-            if ( getProject().getDependencies() != null && isProcessingDependencies() )
-            {
-                useReactor( pom, getProject().getDependencies() );
+            if (getProject().getDependencies() != null && isProcessingDependencies()) {
+                useReactor(pom, getProject().getDependencies());
             }
-        }
-        catch ( ArtifactMetadataRetrievalException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        } catch (ArtifactMetadataRetrievalException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private void useReactor( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
+    private void useReactor(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
 
-        for ( Dependency dep : dependencies )
-        {
-            Artifact artifact = this.toArtifact( dep );
-            if ( !isIncluded( artifact ) )
-            {
+        for (Dependency dep : dependencies) {
+            Artifact artifact = this.toArtifact(dep);
+            if (!isIncluded(artifact)) {
                 continue;
             }
 
-            for ( Object reactorProject : reactorProjects )
-            {
+            for (Object reactorProject : reactorProjects) {
                 MavenProject project = (MavenProject) reactorProject;
-                if ( StringUtils.equals( project.getGroupId(), dep.getGroupId() )
-                    && StringUtils.equals( project.getArtifactId(), dep.getArtifactId() )
-                    && !StringUtils.equals( project.getVersion(), dep.getVersion() ) )
-                {
-                    if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(),
-                                                         project.getVersion(), getProject().getModel() ) )
-                    {
-                        getLog().info( "Updated " + toString( dep ) + " to version " + project.getVersion() );
+                if (StringUtils.equals(project.getGroupId(), dep.getGroupId()) && StringUtils.equals(project.getArtifactId(), dep.getArtifactId())
+                        && !StringUtils.equals(project.getVersion(), dep.getVersion())) {
+                    if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), project.getVersion(),
+                            getProject().getModel())) {
+                        getLog().info("Updated " + toString(dep) + " to version " + project.getVersion());
                     }
                     break;
                 }
@@ -107,19 +92,14 @@ public class UseReactorMojo
         }
     }
 
-    private void useReactor( ModifiedPomXMLEventReader pom, MavenProject parent )
-            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
-        for ( Object reactorProject : reactorProjects )
-        {
+    private void useReactor(ModifiedPomXMLEventReader pom, MavenProject parent)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
+        for (Object reactorProject : reactorProjects) {
             MavenProject project = (MavenProject) reactorProject;
-            if ( StringUtils.equals( project.getGroupId(), parent.getGroupId() )
-                    && StringUtils.equals( project.getArtifactId(), parent.getArtifactId() )
-                    && !StringUtils.equals( project.getVersion(), parent.getVersion() ) )
-            {
-                if ( PomHelper.setProjectParentVersion( pom, project.getVersion() ) )
-                {
-                    getLog().info( "Updated parent " + toString( parent ) + " to version " + project.getVersion() );
+            if (StringUtils.equals(project.getGroupId(), parent.getGroupId()) && StringUtils.equals(project.getArtifactId(), parent.getArtifactId())
+                    && !StringUtils.equals(project.getVersion(), parent.getVersion())) {
+                if (PomHelper.setProjectParentVersion(pom, project.getVersion())) {
+                    getLog().info("Updated parent " + toString(parent) + " to version " + project.getVersion());
                 }
             }
 

@@ -26,9 +26,7 @@ import java.util.Comparator;
 /**
  * A rule for comparing and manipulating versions.
  */
-public interface VersionComparator
-    extends Comparator<ArtifactVersion>
-{
+public interface VersionComparator extends Comparator<ArtifactVersion> {
     /**
      * Returns the number of segments specified or specifiable in the supplied artifact version.
      *
@@ -36,7 +34,7 @@ public interface VersionComparator
      * @return The number of segments.
      * @since 1.0-beta-1
      */
-    int getSegmentCount( ArtifactVersion artifactVersion );
+    int getSegmentCount(ArtifactVersion artifactVersion);
 
     /**
      * Increment the specified segment of the supplied version.
@@ -46,5 +44,5 @@ public interface VersionComparator
      * @return An artifact version with the specified segment incremented.
      * @since 1.0-beta-1
      */
-    ArtifactVersion incrementSegment( ArtifactVersion artifactVersion, int segment );
+    ArtifactVersion incrementSegment(ArtifactVersion artifactVersion, int segment);
 }

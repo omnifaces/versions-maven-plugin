@@ -45,16 +45,14 @@ import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
  * @author Paul Gier
  * @since 1.0-alpha-3
  */
-@Mojo( name = "resolve-ranges", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class ResolveRangesMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "resolve-ranges", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class ResolveRangesMojo extends AbstractVersionsDependencyUpdaterMojo {
     /**
      * Whether to process the properties section of the project.
      *
      * @since 1.3
      */
-    @Parameter( property = "processProperties", defaultValue = "true" )
+    @Parameter(property = "processProperties", defaultValue = "true")
     private boolean processProperties;
 
     /**
@@ -63,7 +61,7 @@ public class ResolveRangesMojo
      * @parameter property="includeProperties"
      * @since 1.3
      */
-    @Parameter( property = "includeProperties" )
+    @Parameter(property = "includeProperties")
     private String includeProperties = null;
 
     /**
@@ -71,7 +69,7 @@ public class ResolveRangesMojo
      *
      * @since 1.3
      */
-    @Parameter( property = "excludeProperties" )
+    @Parameter(property = "excludeProperties")
     private String excludeProperties = null;
 
     /**
@@ -79,7 +77,7 @@ public class ResolveRangesMojo
      *
      * @since 2.5
      */
-    @Parameter( property = "allowMajorUpdates", defaultValue = "true" )
+    @Parameter(property = "allowMajorUpdates", defaultValue = "true")
     private boolean allowMajorUpdates;
 
     /**
@@ -87,7 +85,7 @@ public class ResolveRangesMojo
      *
      * @since 2.5
      */
-    @Parameter( property = "allowMinorUpdates", defaultValue = "true" )
+    @Parameter(property = "allowMinorUpdates", defaultValue = "true")
     private boolean allowMinorUpdates;
 
     /**
@@ -95,7 +93,7 @@ public class ResolveRangesMojo
      *
      * @since 2.5
      */
-    @Parameter( property = "allowIncrementalUpdates", defaultValue = "true" )
+    @Parameter(property = "allowIncrementalUpdates", defaultValue = "true")
     private boolean allowIncrementalUpdates;
 
     // ------------------------------ FIELDS ------------------------------
@@ -103,7 +101,7 @@ public class ResolveRangesMojo
     /**
      * Pattern to match a version range. For example 1.0-20090128.202731-1
      */
-    public final Pattern matchRangeRegex = Pattern.compile( "," );
+    public final Pattern matchRangeRegex = Pattern.compile(",");
 
     // ------------------------------ METHODS --------------------------
 
@@ -114,88 +112,67 @@ public class ResolveRangesMojo
      * @throws XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException, ArtifactMetadataRetrievalException
-    {
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom)
+            throws MojoExecutionException, MojoFailureException, XMLStreamException, ArtifactMetadataRetrievalException {
         // Note we have to get the dependencies from the model because the dependencies in the
         // project may have already had their range resolved [MNG-4138]
-        if ( hasDependencyManagement() && hasDependenciesInDependencyManagement()
-            && isProcessingDependencyManagement() )
-        {
-            getLog().debug( "processing dependencyManagement of " + getProject().getId() );
-            resolveRanges( pom, getProject().getModel().getDependencyManagement().getDependencies() );
+        if (hasDependencyManagement() && hasDependenciesInDependencyManagement() && isProcessingDependencyManagement()) {
+            getLog().debug("processing dependencyManagement of " + getProject().getId());
+            resolveRanges(pom, getProject().getModel().getDependencyManagement().getDependencies());
         }
-        if ( getProject().getDependencies() != null && isProcessingDependencies() )
-        {
-            getLog().debug( "processing dependencies of " + getProject().getId() );
-            resolveRanges( pom, getProject().getModel().getDependencies() );
+        if (getProject().getDependencies() != null && isProcessingDependencies()) {
+            getLog().debug("processing dependencies of " + getProject().getId());
+            resolveRanges(pom, getProject().getModel().getDependencies());
         }
-        if ( hasParent() && isProcessingParent() )
-        {
-            getLog().debug( "processing parent " + getProject().getId() );
-            resolveRangesInParent( pom );
+        if (hasParent() && isProcessingParent()) {
+            getLog().debug("processing parent " + getProject().getId());
+            resolveRangesInParent(pom);
         }
-        if ( processProperties )
-        {
-            getLog().debug( "processing properties of " + getProject().getId() );
-            resolvePropertyRanges( pom );
+        if (processProperties) {
+            getLog().debug("processing properties of " + getProject().getId());
+            resolvePropertyRanges(pom);
         }
     }
 
-    private boolean hasParent()
-    {
+    private boolean hasParent() {
         return getProject().getModel().getParent() != null;
     }
 
-    private boolean hasDependenciesInDependencyManagement()
-    {
+    private boolean hasDependenciesInDependencyManagement() {
         return getProject().getModel().getDependencyManagement().getDependencies() != null;
     }
 
-    private boolean hasDependencyManagement()
-    {
+    private boolean hasDependencyManagement() {
         return getProject().getModel().getDependencyManagement() != null;
     }
 
-    private void resolveRangesInParent( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, ArtifactMetadataRetrievalException, XMLStreamException
-    {
-        Matcher versionMatcher = matchRangeRegex.matcher( getProject().getModel().getParent().getVersion() );
+    private void resolveRangesInParent(ModifiedPomXMLEventReader pom) throws MojoExecutionException, ArtifactMetadataRetrievalException, XMLStreamException {
+        Matcher versionMatcher = matchRangeRegex.matcher(getProject().getModel().getParent().getVersion());
 
-        if ( versionMatcher.find() )
-        {
-            Artifact artifact = this.toArtifact( getProject().getModel().getParent() );
+        if (versionMatcher.find()) {
+            Artifact artifact = this.toArtifact(getProject().getModel().getParent());
 
-            if ( artifact != null && isIncluded( artifact ) )
-            {
-                getLog().debug( "Resolving version range for parent: " + artifact );
+            if (artifact != null && isIncluded(artifact)) {
+                getLog().debug("Resolving version range for parent: " + artifact);
 
                 String artifactVersion = artifact.getVersion();
-                if ( artifactVersion == null )
-                {
-                    ArtifactVersion latestVersion =
-                        findLatestVersion( artifact, artifact.getVersionRange(), allowSnapshots, false );
+                if (artifactVersion == null) {
+                    ArtifactVersion latestVersion = findLatestVersion(artifact, artifact.getVersionRange(), allowSnapshots, false);
 
-                    if ( latestVersion != null )
-                    {
+                    if (latestVersion != null) {
                         artifactVersion = latestVersion.toString();
-                    }
-                    else
-                    {
-                        getLog().warn( "Not updating version " + artifact + " : could not resolve any versions" );
+                    } else {
+                        getLog().warn("Not updating version " + artifact + " : could not resolve any versions");
                     }
                 }
 
-                if ( artifactVersion != null )
-                {
-                    if ( PomHelper.setProjectParentVersion( pom, artifactVersion ) )
-                    {
-                        getLog().debug( "Version set to " + artifactVersion + " for parent: " + artifact );
-                    }
-                    else
-                    {
-                        getLog().warn( "Could not find the version tag for parent " + artifact + " in project "
-                            + getProject().getId() + " so unable to set version to " + artifactVersion );
+                if (artifactVersion != null) {
+                    if (PomHelper.setProjectParentVersion(pom, artifactVersion)) {
+                        getLog().debug("Version set to " + artifactVersion + " for parent: " + artifact);
+                    } else {
+                        getLog().warn("Could not find the version tag for parent " + artifact + " in project " + getProject().getId()
+                                + " so unable to set version to " + artifactVersion);
                     }
                 }
             }
@@ -203,55 +180,40 @@ public class ResolveRangesMojo
 
     }
 
-    private void resolveRanges( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
+    private void resolveRanges(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
 
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
                 continue;
             }
 
-            Matcher versionMatcher = matchRangeRegex.matcher( dep.getVersion() );
+            Matcher versionMatcher = matchRangeRegex.matcher(dep.getVersion());
 
-            if ( versionMatcher.find() )
-            {
-                Artifact artifact = this.toArtifact( dep );
+            if (versionMatcher.find()) {
+                Artifact artifact = this.toArtifact(dep);
 
-                if ( artifact != null && isIncluded( artifact ) )
-                {
-                    getLog().debug( "Resolving version range for dependency: " + artifact );
+                if (artifact != null && isIncluded(artifact)) {
+                    getLog().debug("Resolving version range for dependency: " + artifact);
 
                     String artifactVersion = artifact.getVersion();
-                    if ( artifactVersion == null )
-                    {
-                        ArtifactVersion latestVersion =
-                            findLatestVersion( artifact, artifact.getVersionRange(), allowSnapshots, false );
+                    if (artifactVersion == null) {
+                        ArtifactVersion latestVersion = findLatestVersion(artifact, artifact.getVersionRange(), allowSnapshots, false);
 
-                        if ( latestVersion != null )
-                        {
+                        if (latestVersion != null) {
                             artifactVersion = latestVersion.toString();
-                        }
-                        else
-                        {
-                            getLog().warn( "Not updating version " + artifact + " : could not resolve any versions" );
+                        } else {
+                            getLog().warn("Not updating version " + artifact + " : could not resolve any versions");
                         }
                     }
 
-                    if ( artifactVersion != null )
-                    {
-                        if ( PomHelper.setDependencyVersion( pom, artifact.getGroupId(), artifact.getArtifactId(),
-                                                             dep.getVersion(), artifactVersion,
-                                                             getProject().getModel() ) )
-                        {
-                            getLog().debug( "Version set to " + artifactVersion + " for dependency: " + artifact );
-                        }
-                        else
-                        {
-                            getLog().debug( "Could not find the version tag for dependency " + artifact + " in project "
-                                + getProject().getId() + " so unable to set version to " + artifactVersion );
+                    if (artifactVersion != null) {
+                        if (PomHelper.setDependencyVersion(pom, artifact.getGroupId(), artifact.getArtifactId(), dep.getVersion(), artifactVersion,
+                                getProject().getModel())) {
+                            getLog().debug("Version set to " + artifactVersion + " for dependency: " + artifact);
+                        } else {
+                            getLog().debug("Could not find the version tag for dependency " + artifact + " in project " + getProject().getId()
+                                    + " so unable to set version to " + artifactVersion);
                         }
                     }
                 }
@@ -259,28 +221,24 @@ public class ResolveRangesMojo
         }
     }
 
-    private void resolvePropertyRanges( ModifiedPomXMLEventReader pom )
-        throws XMLStreamException, MojoExecutionException
-    {
+    private void resolvePropertyRanges(ModifiedPomXMLEventReader pom) throws XMLStreamException, MojoExecutionException {
 
-        Map<Property, PropertyVersions> propertyVersions =
-            this.getHelper().getVersionPropertiesMap( getProject(), null, includeProperties, excludeProperties, true );
-        for ( Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet() )
-        {
+        Map<Property, PropertyVersions> propertyVersions = this.getHelper().getVersionPropertiesMap(getProject(), null, includeProperties, excludeProperties,
+                true);
+        for (Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet()) {
             Property property = entry.getKey();
             PropertyVersions version = entry.getValue();
 
-            final String currentVersion = getProject().getProperties().getProperty( property.getName() );
-            if ( currentVersion == null || !matchRangeRegex.matcher( currentVersion ).find() )
-            {
+            final String currentVersion = getProject().getProperties().getProperty(property.getName());
+            if (currentVersion == null || !matchRangeRegex.matcher(currentVersion).find()) {
                 continue;
             }
 
-            property.setVersion( currentVersion );
+            property.setVersion(currentVersion);
 
-            int segment = determineUnchangedSegment( allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates );
-            // TODO: Check if we could add allowDowngrade ? 
-            updatePropertyToNewestVersion( pom, property, version, currentVersion, false, segment );
+            int segment = determineUnchangedSegment(allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates);
+            // TODO: Check if we could add allowDowngrade ?
+            updatePropertyToNewestVersion(pom, property, version, currentVersion, false, segment);
 
         }
     }

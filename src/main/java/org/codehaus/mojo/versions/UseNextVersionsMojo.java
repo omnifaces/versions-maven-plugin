@@ -1,5 +1,9 @@
 package org.codehaus.mojo.versions;
 
+import java.util.Collection;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,20 +34,14 @@ import org.codehaus.mojo.versions.api.ArtifactVersions;
 import org.codehaus.mojo.versions.api.PomHelper;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
-import java.util.Iterator;
-
 /**
  * Replaces any version with the latest version.
  *
  * @author Stephen Connolly
  * @since 1.0-alpha-3
  */
-@Mojo( name = "use-next-versions", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UseNextVersionsMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "use-next-versions", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UseNextVersionsMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     // ------------------------------ METHODS --------------------------
 
@@ -54,53 +52,41 @@ public class UseNextVersionsMojo
      * @throws javax.xml.stream.XMLStreamException when things go wrong with XML streaming
      * @see org.codehaus.mojo.versions.AbstractVersionsUpdaterMojo#update(org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        try
-        {
-            if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-            {
-                useNextVersions( pom, getProject().getDependencyManagement().getDependencies() );
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        try {
+            if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+                useNextVersions(pom, getProject().getDependencyManagement().getDependencies());
             }
-            if ( getProject().getDependencies() != null && isProcessingDependencies() )
-            {
-                useNextVersions( pom, getProject().getDependencies() );
+            if (getProject().getDependencies() != null && isProcessingDependencies()) {
+                useNextVersions(pom, getProject().getDependencies());
             }
-        }
-        catch ( ArtifactMetadataRetrievalException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        } catch (ArtifactMetadataRetrievalException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private void useNextVersions( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
-        for ( Dependency dep : dependencies ) {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+    private void useNextVersions(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
             String version = dep.getVersion();
-            Artifact artifact = this.toArtifact( dep );
-            if ( !isIncluded( artifact ) )
-            {
+            Artifact artifact = this.toArtifact(dep);
+            if (!isIncluded(artifact)) {
                 continue;
             }
 
-            getLog().debug( "Looking for newer versions of " + toString( dep ) );
-            ArtifactVersions versions = getHelper().lookupArtifactVersions( artifact, false );
-            ArtifactVersion[] newer = versions.getNewerVersions( version, Boolean.TRUE.equals( allowSnapshots ) );
-            if ( newer.length > 0 )
-            {
+            getLog().debug("Looking for newer versions of " + toString(dep));
+            ArtifactVersions versions = getHelper().lookupArtifactVersions(artifact, false);
+            ArtifactVersion[] newer = versions.getNewerVersions(version, Boolean.TRUE.equals(allowSnapshots));
+            if (newer.length > 0) {
                 String newVersion = newer[0].toString();
-                if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version, newVersion,
-                                                     getProject().getModel() ) )
-                {
-                    getLog().info( "Updated " + toString( dep ) + " to version " + newVersion );
+                if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, newVersion, getProject().getModel())) {
+                    getLog().info("Updated " + toString(dep) + " to version " + newVersion);
                 }
             }
         }

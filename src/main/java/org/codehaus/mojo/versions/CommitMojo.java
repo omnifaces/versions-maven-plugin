@@ -1,5 +1,8 @@
 package org.codehaus.mojo.versions;
 
+import java.io.File;
+import java.io.IOException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,43 +30,33 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Removes the initial backup of the pom, thereby accepting the changes.
  *
  * @author Stephen Connolly
  * @since 1.0-alpha-3
  */
-@Mojo( name = "commit", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class CommitMojo
-    extends AbstractMojo
-{
+@Mojo(name = "commit", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class CommitMojo extends AbstractMojo {
     /**
      * The Maven Project.
      *
      * @since 1.0-alpha-1
      */
-    @Parameter( defaultValue = "${project}", required = true, readonly = true )
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
 
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
         File outFile = project.getFile();
-        File backupFile = new File( outFile.getParentFile(), outFile.getName() + ".versionsBackup" );
+        File backupFile = new File(outFile.getParentFile(), outFile.getName() + ".versionsBackup");
 
-        if ( backupFile.exists() )
-        {
-            getLog().info( "Accepting all changes to " + outFile );
-            try
-            {
-                FileUtils.forceDelete( backupFile );
-            }
-            catch ( IOException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
+        if (backupFile.exists()) {
+            getLog().info("Accepting all changes to " + outFile);
+            try {
+                FileUtils.forceDelete(backupFile);
+            } catch (IOException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
             }
         }
     }

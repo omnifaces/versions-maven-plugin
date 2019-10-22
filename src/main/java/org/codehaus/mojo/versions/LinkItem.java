@@ -25,8 +25,7 @@ package org.codehaus.mojo.versions;
  * @author Stephen Connolly
  * @since 1.0-alpha-1
  */
-public class LinkItem
-{
+public class LinkItem {
 
     // ------------------------------ FIELDS ------------------------------
 
@@ -80,8 +79,7 @@ public class LinkItem
      *
      * @since 1.0-alpha-1
      */
-    public LinkItem()
-    {
+    public LinkItem() {
     }
 
     // --------------------- GETTER / SETTER METHODS ---------------------
@@ -92,8 +90,7 @@ public class LinkItem
      * @return Value for property 'allowSnapshots'.
      * @since 1.0-alpha-1
      */
-    public Boolean getAllowSnapshots()
-    {
+    public Boolean getAllowSnapshots() {
         return allowSnapshots;
     }
 
@@ -103,8 +100,7 @@ public class LinkItem
      * @param allowSnapshots Value to set for property 'allowSnapshots'.
      * @since 1.0-alpha-1
      */
-    public void setAllowSnapshots( Boolean allowSnapshots )
-    {
+    public void setAllowSnapshots(Boolean allowSnapshots) {
         this.allowSnapshots = allowSnapshots;
     }
 
@@ -114,8 +110,7 @@ public class LinkItem
      * @return Value for property 'artifactId'.
      * @since 1.0-alpha-1
      */
-    public String getArtifactId()
-    {
+    public String getArtifactId() {
         return artifactId;
     }
 
@@ -125,8 +120,7 @@ public class LinkItem
      * @param artifactId Value to set for property 'artifactId'.
      * @since 1.0-alpha-1
      */
-    public void setArtifactId( String artifactId )
-    {
+    public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
     }
 
@@ -136,8 +130,7 @@ public class LinkItem
      * @return Value for property 'groupId'.
      * @since 1.0-alpha-1
      */
-    public String getGroupId()
-    {
+    public String getGroupId() {
         return groupId;
     }
 
@@ -147,8 +140,7 @@ public class LinkItem
      * @param groupId Value to set for property 'groupId'.
      * @since 1.0-alpha-1
      */
-    public void setGroupId( String groupId )
-    {
+    public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
 
@@ -158,8 +150,7 @@ public class LinkItem
      * @return Value for property 'property'.
      * @since 1.0-alpha-1
      */
-    public String getProperty()
-    {
+    public String getProperty() {
         return property;
     }
 
@@ -169,8 +160,7 @@ public class LinkItem
      * @param property Value to set for property 'property'.
      * @since 1.0-alpha-1
      */
-    public void setProperty( String property )
-    {
+    public void setProperty(String property) {
         this.property = property;
     }
 
@@ -180,8 +170,7 @@ public class LinkItem
      * @return Value for property 'version'.
      * @since 1.0-alpha-1
      */
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 
@@ -191,8 +180,7 @@ public class LinkItem
      * @param version Value to set for property 'version'.
      * @since 1.0-alpha-1
      */
-    public void setVersion( String version )
-    {
+    public void setVersion(String version) {
         this.version = version;
     }
 
@@ -203,18 +191,17 @@ public class LinkItem
      *
      * @since 1.0-alpha-1
      */
-    public String toString()
-    {
-        StringBuilder buf = new StringBuilder( "${" );
-        buf.append( property );
-        buf.append( "} = " );
-        buf.append( groupId );
-        buf.append( ':' );
-        buf.append( artifactId );
-        if ( version != null )
-        {
-            buf.append( ':' );
-            buf.append( version );
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder("${");
+        buf.append(property);
+        buf.append("} = ");
+        buf.append(groupId);
+        buf.append(':');
+        buf.append(artifactId);
+        if (version != null) {
+            buf.append(':');
+            buf.append(version);
         }
         return buf.toString();
     }

@@ -36,35 +36,28 @@ import org.codehaus.plexus.util.FileUtils;
  * @author Stephen Connolly
  * @since 1.0-alpha-3
  */
-@Mojo( name = "revert", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class RevertMojo
-    extends AbstractMojo
-{
+@Mojo(name = "revert", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class RevertMojo extends AbstractMojo {
     /**
      * The Maven Project.
      *
      * @since 1.0-alpha-1
      */
-    @Parameter( defaultValue = "${project}", required = true, readonly = true )
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
 
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
         File outFile = project.getFile();
-        File backupFile = new File( outFile.getParentFile(), outFile.getName() + ".versionsBackup" );
+        File backupFile = new File(outFile.getParentFile(), outFile.getName() + ".versionsBackup");
 
-        if ( backupFile.exists() )
-        {
-            getLog().info( "Restoring " + outFile + " from " + backupFile );
-            try
-            {
-                FileUtils.copyFile( backupFile, outFile );
-                FileUtils.forceDelete( backupFile );
-            }
-            catch ( IOException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
+        if (backupFile.exists()) {
+            getLog().info("Restoring " + outFile + " from " + backupFile);
+            try {
+                FileUtils.copyFile(backupFile, outFile);
+                FileUtils.forceDelete(backupFile);
+            } catch (IOException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
             }
         }
     }

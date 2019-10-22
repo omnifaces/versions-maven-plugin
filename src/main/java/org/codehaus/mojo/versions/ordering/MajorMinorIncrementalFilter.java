@@ -48,8 +48,7 @@ import org.codehaus.mojo.versions.api.AbstractVersionDetails;
  * 
  * @author Karl Heinz Marbaise
  */
-public class MajorMinorIncrementalFilter
-{
+public class MajorMinorIncrementalFilter {
 
     private boolean allowMajorUpdates;
 
@@ -57,9 +56,7 @@ public class MajorMinorIncrementalFilter
 
     private boolean allowIncrementalUpdates;
 
-    public MajorMinorIncrementalFilter( boolean allowMajorUpdates, boolean allowMinorUpdates,
-                                        boolean allowIncrementalUpdates )
-    {
+    public MajorMinorIncrementalFilter(boolean allowMajorUpdates, boolean allowMinorUpdates, boolean allowIncrementalUpdates) {
         this.allowMajorUpdates = allowMajorUpdates;
         this.allowMinorUpdates = allowMinorUpdates;
         this.allowIncrementalUpdates = allowIncrementalUpdates;
@@ -69,52 +66,37 @@ public class MajorMinorIncrementalFilter
      * @param selectedVersion The version which will be checked.
      * @param newerVersions The list of identified versions which are greater or equal than the selectedVersion.
      * @return The cleaned up list which obeys usage of {@link #allowMajorUpdates}, {@link #allowMinorUpdates},
-     *         {@link #allowIncrementalUpdates}.
+     * {@link #allowIncrementalUpdates}.
      */
-    public ArtifactVersion[] filter( ArtifactVersion selectedVersion, ArtifactVersion[] newerVersions )
-    {
+    public ArtifactVersion[] filter(ArtifactVersion selectedVersion, ArtifactVersion[] newerVersions) {
         List<ArtifactVersion> versionsToUse = new LinkedList<ArtifactVersion>();
-        for ( ArtifactVersion artifactVersion : newerVersions )
-        {
-            if ( artifactVersion.getMajorVersion() != selectedVersion.getMajorVersion() )
-            {
-                if ( allowMajorUpdates )
-                {
-                    if ( !versionsToUse.contains( artifactVersion ) )
-                    {
-                        versionsToUse.add( artifactVersion );
+        for (ArtifactVersion artifactVersion : newerVersions) {
+            if (artifactVersion.getMajorVersion() != selectedVersion.getMajorVersion()) {
+                if (allowMajorUpdates) {
+                    if (!versionsToUse.contains(artifactVersion)) {
+                        versionsToUse.add(artifactVersion);
                     }
                 }
-            }
-            else if ( artifactVersion.getMinorVersion() != selectedVersion.getMinorVersion() )
-            {
-                if ( allowMinorUpdates )
-                {
-                    if ( !versionsToUse.contains( artifactVersion ) )
-                    {
-                        versionsToUse.add( artifactVersion );
+            } else if (artifactVersion.getMinorVersion() != selectedVersion.getMinorVersion()) {
+                if (allowMinorUpdates) {
+                    if (!versionsToUse.contains(artifactVersion)) {
+                        versionsToUse.add(artifactVersion);
                     }
                 }
-            }
-            else if ( artifactVersion.getIncrementalVersion() != selectedVersion.getIncrementalVersion() )
-            {
-                if ( allowIncrementalUpdates )
-                {
-                    if ( !versionsToUse.contains( artifactVersion ) )
-                    {
-                        versionsToUse.add( artifactVersion );
+            } else if (artifactVersion.getIncrementalVersion() != selectedVersion.getIncrementalVersion()) {
+                if (allowIncrementalUpdates) {
+                    if (!versionsToUse.contains(artifactVersion)) {
+                        versionsToUse.add(artifactVersion);
                     }
                 }
-            }
-            else {
-                // build number or qualifier.  Will already be sorted and higher
-                if ( !versionsToUse.contains( artifactVersion ) )
-                {
-                        versionsToUse.add( artifactVersion );
+            } else {
+                // build number or qualifier. Will already be sorted and higher
+                if (!versionsToUse.contains(artifactVersion)) {
+                    versionsToUse.add(artifactVersion);
                 }
             }
         }
-        return versionsToUse.toArray( new ArtifactVersion[versionsToUse.size()] );
+        return versionsToUse.toArray(new ArtifactVersion[versionsToUse.size()]);
 
     }
 }

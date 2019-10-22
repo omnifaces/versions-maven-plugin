@@ -1,5 +1,9 @@
 package org.codehaus.mojo.versions;
 
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,28 +30,23 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.mojo.versions.api.PropertyVersions;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Map;
-
 /**
  * Sets a property to the latest version in a given range of associated artifacts.
  *
  * @author Eric Pabst
  * @since 1.3
  */
-@Mojo( name = "update-property", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UpdatePropertyMojo
-    extends AbstractVersionsUpdaterMojo
-{
+@Mojo(name = "update-property", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UpdatePropertyMojo extends AbstractVersionsUpdaterMojo {
 
     // ------------------------------ FIELDS ------------------------------
 
     /**
      * A property to update.
-     * 
+     *
      * @since 1.3
      */
-    @Parameter( property = "property" )
+    @Parameter(property = "property")
     private String property = null;
 
     /**
@@ -59,14 +58,13 @@ public class UpdatePropertyMojo
      * <li><code>[1.5,)</code> Versions 1.5 and higher</li>
      * <li><code>(,1.0],[1.2,)</code> Versions up to 1.0 (included) and 1.2 or higher</li>
      * </ul>
-     * If you like to define the version to be used exactly you have to use it like this:
-     * <code>-DnewVersion=[19.0]</code> otherwise a newer existing version will be used. If you need to downgrade a
-     * version you have to define <code>-DallowDowngrade=true</code> as well otherwise
-     * the version will be kept.
-     * 
+     * If you like to define the version to be used exactly you have to use it like this: <code>-DnewVersion=[19.0]</code>
+     * otherwise a newer existing version will be used. If you need to downgrade a version you have to define
+     * <code>-DallowDowngrade=true</code> as well otherwise the version will be kept.
+     *
      * @since 1.3
      */
-    @Parameter( property = "newVersion" )
+    @Parameter(property = "newVersion")
     private String newVersion = null;
 
     /**
@@ -74,17 +72,17 @@ public class UpdatePropertyMojo
      *
      * @since 1.0-alpha-2
      */
-    @Parameter( property = "autoLinkItems", defaultValue = "true" )
+    @Parameter(property = "autoLinkItems", defaultValue = "true")
     private boolean autoLinkItems;
 
     /**
      * If a property points to a version like <code>1.2.3</code> and your repository contains versions like
-     * <code>1.2.3</code> and <code>1.1.0</code> without settings this to <code>true</code> the property will never
-     * being changed back to <code>1.1.0</code> by using <code>-DnewVersion=[1.1.0]</code>.
-     * 
+     * <code>1.2.3</code> and <code>1.1.0</code> without settings this to <code>true</code> the property will never being
+     * changed back to <code>1.1.0</code> by using <code>-DnewVersion=[1.1.0]</code>.
+     *
      * @since 3.0.0
      */
-    @Parameter( property = "allowDowngrade", defaultValue = "false" )
+    @Parameter(property = "allowDowngrade", defaultValue = "false")
     private boolean allowDowngrade;
 
     /**
@@ -92,7 +90,7 @@ public class UpdatePropertyMojo
      *
      * @since 2.4
      */
-    @Parameter( property = "allowMajorUpdates", defaultValue = "true" )
+    @Parameter(property = "allowMajorUpdates", defaultValue = "true")
     protected boolean allowMajorUpdates;
 
     /**
@@ -100,7 +98,7 @@ public class UpdatePropertyMojo
      *
      * @since 2.4
      */
-    @Parameter( property = "allowMinorUpdates", defaultValue = "true" )
+    @Parameter(property = "allowMinorUpdates", defaultValue = "true")
     protected boolean allowMinorUpdates;
 
     /**
@@ -108,7 +106,7 @@ public class UpdatePropertyMojo
      *
      * @since 2.4
      */
-    @Parameter( property = "allowIncrementalUpdates", defaultValue = "true" )
+    @Parameter(property = "allowIncrementalUpdates", defaultValue = "true")
     protected boolean allowIncrementalUpdates;
 
     // -------------------------- STATIC METHODS --------------------------
@@ -123,27 +121,23 @@ public class UpdatePropertyMojo
      * @see AbstractVersionsUpdaterMojo#update(ModifiedPomXMLEventReader)
      * @since 1.0-alpha-1
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        Property propertyConfig = new Property( property );
-        propertyConfig.setVersion( newVersion );
-        Map<Property, PropertyVersions> propertyVersions =
-            this.getHelper().getVersionPropertiesMap( getProject(), new Property[] { propertyConfig }, property, "",
-                                                      autoLinkItems );
-        for ( Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet() )
-        {
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        Property propertyConfig = new Property(property);
+        propertyConfig.setVersion(newVersion);
+        Map<Property, PropertyVersions> propertyVersions = this.getHelper().getVersionPropertiesMap(getProject(), new Property[] { propertyConfig }, property,
+                "", autoLinkItems);
+        for (Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet()) {
             Property property = entry.getKey();
             PropertyVersions version = entry.getValue();
 
-            final String currentVersion = getProject().getProperties().getProperty( property.getName() );
-            if ( currentVersion == null )
-            {
+            final String currentVersion = getProject().getProperties().getProperty(property.getName());
+            if (currentVersion == null) {
                 continue;
             }
 
-            int segment = determineUnchangedSegment( allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates );
-            updatePropertyToNewestVersion( pom, property, version, currentVersion, allowDowngrade, segment );
+            int segment = determineUnchangedSegment(allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates);
+            updatePropertyToNewestVersion(pom, property, version, currentVersion, allowDowngrade, segment);
 
         }
     }

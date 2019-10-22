@@ -33,15 +33,13 @@ import org.codehaus.plexus.util.FileUtils;
  *
  * @author Stephen Connolly
  */
-public abstract class AbstractVersionsDisplayMojo
-    extends AbstractVersionsUpdaterMojo
-{
+public abstract class AbstractVersionsDisplayMojo extends AbstractVersionsUpdaterMojo {
     /**
      * If specified then the display output will be sent to the specified file.
      *
      * @since 2.2
      */
-    @Parameter( property = "versions.outputFile" )
+    @Parameter(property = "versions.outputFile")
     private File outputFile;
 
     /**
@@ -49,7 +47,7 @@ public abstract class AbstractVersionsDisplayMojo
      *
      * @since 2.2
      */
-    @Parameter( property = "versions.logOutput", defaultValue = "true" )
+    @Parameter(property = "versions.logOutput", defaultValue = "true")
     private boolean logOutput;
 
     /**
@@ -57,94 +55,65 @@ public abstract class AbstractVersionsDisplayMojo
      *
      * @since 2.2
      */
-    @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
+    @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
     private String outputEncoding;
 
     private boolean outputFileError = false;
 
-    protected void logInit()
-    {
-        if ( outputFile != null && !outputFileError )
-        {
-            if ( outputFile.isFile() )
-            {
+    protected void logInit() {
+        if (outputFile != null && !outputFileError) {
+            if (outputFile.isFile()) {
                 final String key = AbstractVersionsDisplayMojo.class.getName() + ".outputFile";
                 String outputFileName;
-                try
-                {
+                try {
                     outputFileName = outputFile.getCanonicalPath();
-                }
-                catch ( IOException e )
-                {
+                } catch (IOException e) {
                     outputFileName = outputFile.getAbsolutePath();
                 }
-                Set<String> files = (Set<String>) getPluginContext().get( key );
-                if ( files == null )
-                {
+                Set<String> files = (Set<String>) getPluginContext().get(key);
+                if (files == null) {
                     files = new LinkedHashSet<>();
+                } else {
+                    files = new LinkedHashSet<>(files);
                 }
-                else
-                {
-                    files = new LinkedHashSet<>( files );
-                }
-                if ( !files.contains( outputFileName ) )
-                {
-                    if ( !outputFile.delete() )
-                    {
-                        getLog().error( "Cannot delete " + outputFile + " will append instead" );
+                if (!files.contains(outputFileName)) {
+                    if (!outputFile.delete()) {
+                        getLog().error("Cannot delete " + outputFile + " will append instead");
                     }
                 }
-                files.add( outputFileName );
-                getPluginContext().put( key, files );
-            }
-            else
-            {
-                if ( outputFile.exists() )
-                {
-                    getLog().error( "Cannot send output to " + outputFile + " as it exists but is not a file" );
+                files.add(outputFileName);
+                getPluginContext().put(key, files);
+            } else {
+                if (outputFile.exists()) {
+                    getLog().error("Cannot send output to " + outputFile + " as it exists but is not a file");
                     outputFileError = true;
-                }
-                else if ( !outputFile.getParentFile().isDirectory() )
-                {
-                    if ( !outputFile.getParentFile().mkdirs() )
-                    {
+                } else if (!outputFile.getParentFile().isDirectory()) {
+                    if (!outputFile.getParentFile().mkdirs()) {
                         outputFileError = true;
                     }
                 }
             }
-            if ( !outputFileError && StringUtils.isBlank( outputEncoding ) )
-            {
-                outputEncoding = System.getProperty( "file.encoding" );
-                getLog().warn( "File encoding has not been set, using platform encoding " + outputEncoding
-                    + ", i.e. build is platform dependent!" );
+            if (!outputFileError && StringUtils.isBlank(outputEncoding)) {
+                outputEncoding = System.getProperty("file.encoding");
+                getLog().warn("File encoding has not been set, using platform encoding " + outputEncoding + ", i.e. build is platform dependent!");
             }
         }
     }
 
-    protected void logLine( boolean error, String line )
-    {
-        if ( logOutput )
-        {
-            if ( error )
-            {
-                getLog().error( line );
-            }
-            else
-            {
-                getLog().info( line );
+    protected void logLine(boolean error, String line) {
+        if (logOutput) {
+            if (error) {
+                getLog().error(line);
+            } else {
+                getLog().info(line);
             }
         }
-        if ( outputFile != null && !outputFileError )
-        {
-            try
-            {
-                FileUtils.fileAppend( outputFile.getAbsolutePath(), outputEncoding,
-                                      error ? "> " + line + System.getProperty( "line.separator" )
-                                                      : line + System.getProperty( "line.separator" ) );
-            }
-            catch ( IOException e )
-            {
-                getLog().error( "Cannot send output to " + outputFile, e );
+        if (outputFile != null && !outputFileError) {
+            try {
+                FileUtils.fileAppend(outputFile.getAbsolutePath(), outputEncoding,
+                        error ? "> " + line + System.getProperty("line.separator") : line + System.getProperty("line.separator"));
+            } catch (IOException e) {
+                getLog().error("Cannot send output to " + outputFile, e);
                 outputFileError = true;
             }
         }

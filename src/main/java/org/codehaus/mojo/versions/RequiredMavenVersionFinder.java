@@ -1,5 +1,8 @@
 package org.codehaus.mojo.versions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.model.Plugin;
@@ -8,14 +11,10 @@ import org.apache.maven.model.Prerequisites;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Finds the minimum Maven version required by a Maven project.
- * Checks for the existence of both the prerequisites.maven property and for maven-enforcer-plugin:enforce goal.
- * Returns null if no minimum version is found.
- * Checks project and it's parents recursively.
+ * Finds the minimum Maven version required by a Maven project. Checks for the existence of both the prerequisites.maven
+ * property and for maven-enforcer-plugin:enforce goal. Returns null if no minimum version is found. Checks project and
+ * it's parents recursively.
  *
  * Pros: works with Maven 3.5.0 which throws a warning if prerequisites.maven is set for a non Maven-Plugin project.
  * Cons: tightly coupled with the maven-enforcer-plugin and the Xpp3Dom configuration tag.
@@ -74,7 +73,7 @@ class RequiredMavenVersionFinder {
         if (pluginExecutionsWithEnforceGoal.isEmpty()) {
             return null;
         }
-        
+
         Xpp3Dom requireMavenVersionTag = getRequireMavenVersionTag(pluginExecutionsWithEnforceGoal);
         if (null == requireMavenVersionTag) {
             return null;
@@ -156,7 +155,8 @@ class RequiredMavenVersionFinder {
     }
 
     /**
-     * The below method implements the specification found at https://maven.apache.org/enforcer/enforcer-rules/versionRanges.html
+     * The below method implements the specification found at
+     * https://maven.apache.org/enforcer/enforcer-rules/versionRanges.html
      */
     private ArtifactVersion processMavenVersionRange(String versionRange) {
 
@@ -181,7 +181,8 @@ class RequiredMavenVersionFinder {
             return new DefaultArtifactVersion(versionRange);
         }
 
-        if (!((versionRange.charAt(0) == '[' || versionRange.charAt(0) == '(') && (versionRange.charAt(versionRange.length() - 1) == ']' || versionRange.charAt(versionRange.length() - 1) == ')'))) {
+        if (!((versionRange.charAt(0) == '[' || versionRange.charAt(0) == '(')
+                && (versionRange.charAt(versionRange.length() - 1) == ']' || versionRange.charAt(versionRange.length() - 1) == ')'))) {
             return null;
         }
 
@@ -196,8 +197,7 @@ class RequiredMavenVersionFinder {
         if (commaIndex == -1) {
             if (versionRange.charAt(0) == '[' && versionRange.charAt(versionRange.length() - 1) == ']') {
                 return new DefaultArtifactVersion(innerString);
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -214,7 +214,8 @@ class RequiredMavenVersionFinder {
             }
 
             if (versionRange.charAt(0) == '(' && versionRange.charAt(versionRange.length() - 1) == ')') {
-                // this is actually wrong - the Maven version should be higher than this, the Maven version cannot be equal to this, but the Maven Enforcer plugin should capture this
+                // this is actually wrong - the Maven version should be higher than this, the Maven version cannot be equal to this, but
+                // the Maven Enforcer plugin should capture this
                 return new DefaultArtifactVersion(minimumVersion);
             }
 
@@ -228,7 +229,8 @@ class RequiredMavenVersionFinder {
         }
 
         if (versionRange.charAt(0) == '(') {
-            // this is actually wrong - the Maven version should be higher than this, the Maven version cannot be equal to this, but the Maven Enforcer plugin should capture this
+            // this is actually wrong - the Maven version should be higher than this, the Maven version cannot be equal to this, but
+            // the Maven Enforcer plugin should capture this
             return new DefaultArtifactVersion(minimumVersion);
         }
 

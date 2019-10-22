@@ -38,9 +38,7 @@ import java.io.StringReader;
  *
  * @author Stephen Connolly
  */
-public class ModifiedPomXMLEventReader
-    implements XMLEventReader
-{
+public class ModifiedPomXMLEventReader implements XMLEventReader {
 
     // ------------------------------ FIELDS ------------------------------
 
@@ -128,9 +126,7 @@ public class ModifiedPomXMLEventReader
      * @param factory of type XMLInputFactory
      * @throws XMLStreamException when
      */
-    public ModifiedPomXMLEventReader( StringBuilder pom, XMLInputFactory factory )
-        throws XMLStreamException
-    {
+    public ModifiedPomXMLEventReader(StringBuilder pom, XMLInputFactory factory) throws XMLStreamException {
         this.pom = pom;
         this.factory = factory;
         rewind();
@@ -141,14 +137,11 @@ public class ModifiedPomXMLEventReader
      *
      * @throws XMLStreamException when things go wrong.
      */
-    public void rewind()
-        throws XMLStreamException
-    {
-        backing = factory.createXMLEventReader( new StringReader( pom.toString() ) );
+    public void rewind() throws XMLStreamException {
+        backing = factory.createXMLEventReader(new StringReader(pom.toString()));
         nextEnd = 0;
         nextDelta = 0;
-        for ( int i = 0; i < MAX_MARKS; i++ )
-        {
+        for (int i = 0; i < MAX_MARKS; i++) {
             markStart[i] = -1;
             markEnd[i] = -1;
             markDelta[i] = 0;
@@ -166,8 +159,7 @@ public class ModifiedPomXMLEventReader
      *
      * @return Value for property 'modified'.
      */
-    public boolean isModified()
-    {
+    public boolean isModified() {
         return modified;
     }
 
@@ -178,14 +170,10 @@ public class ModifiedPomXMLEventReader
     /**
      * {@inheritDoc}
      */
-    public Object next()
-    {
-        try
-        {
+    public Object next() {
+        try {
             return nextEvent();
-        }
-        catch ( XMLStreamException e )
-        {
+        } catch (XMLStreamException e) {
             return null;
         }
     }
@@ -193,8 +181,7 @@ public class ModifiedPomXMLEventReader
     /**
      * {@inheritDoc}
      */
-    public void remove()
-    {
+    public void remove() {
         throw new UnsupportedOperationException();
     }
 
@@ -203,15 +190,10 @@ public class ModifiedPomXMLEventReader
     /**
      * {@inheritDoc}
      */
-    public XMLEvent nextEvent()
-        throws XMLStreamException
-    {
-        try
-        {
+    public XMLEvent nextEvent() throws XMLStreamException {
+        try {
             return next;
-        }
-        finally
-        {
+        } finally {
             next = null;
             lastStart = nextStart;
             lastEnd = nextEnd;
@@ -222,56 +204,44 @@ public class ModifiedPomXMLEventReader
     /**
      * {@inheritDoc}
      */
-    public XMLEvent peek()
-        throws XMLStreamException
-    {
+    public XMLEvent peek() throws XMLStreamException {
         return backing.peek();
     }
 
     /**
      * {@inheritDoc}
      */
-    public String getElementText()
-        throws XMLStreamException
-    {
+    public String getElementText() throws XMLStreamException {
         return backing.getElementText();
     }
 
     /**
      * {@inheritDoc}
      */
-    public XMLEvent nextTag()
-        throws XMLStreamException
-    {
-        while ( hasNext() )
-        {
+    public XMLEvent nextTag() throws XMLStreamException {
+        while (hasNext()) {
             XMLEvent e = nextEvent();
-            if ( e.isCharacters() && !( (Characters) e ).isWhiteSpace() )
-            {
-                throw new XMLStreamException( "Unexpected text" );
+            if (e.isCharacters() && !((Characters) e).isWhiteSpace()) {
+                throw new XMLStreamException("Unexpected text");
             }
-            if ( e.isStartElement() || e.isEndElement() )
-            {
+            if (e.isStartElement() || e.isEndElement()) {
                 return e;
             }
         }
-        throw new XMLStreamException( "Unexpected end of Document" );
+        throw new XMLStreamException("Unexpected end of Document");
     }
 
     /**
      * {@inheritDoc}
      */
-    public Object getProperty( String name )
-    {
-        return backing.getProperty( name );
+    public Object getProperty(String name) {
+        return backing.getProperty(name);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void close()
-        throws XMLStreamException
-    {
+    public void close() throws XMLStreamException {
         backing.close();
         next = null;
         backing = null;
@@ -284,9 +254,8 @@ public class ModifiedPomXMLEventReader
      *
      * @return a copy of the backing string buffer.
      */
-    public StringBuilder asStringBuilder()
-    {
-        return new StringBuilder( pom.toString() );
+    public StringBuilder asStringBuilder() {
+        return new StringBuilder(pom.toString());
     }
 
     /**
@@ -294,8 +263,7 @@ public class ModifiedPomXMLEventReader
      *
      * @param index the mark to clear.
      */
-    public void clearMark( int index )
-    {
+    public void clearMark(int index) {
         markStart[index] = -1;
     }
 
@@ -305,11 +273,9 @@ public class ModifiedPomXMLEventReader
      * @param index The mark index.
      * @return the current element when {@link #mark(int)} was called.
      */
-    public String getMarkVerbatim( int index )
-    {
-        if ( hasMark( index ) )
-        {
-            return pom.substring( markDelta[index] + markStart[index], markDelta[index] + markEnd[index] );
+    public String getMarkVerbatim(int index) {
+        if (hasMark(index)) {
+            return pom.substring(markDelta[index] + markStart[index], markDelta[index] + markEnd[index]);
         }
         return "";
     }
@@ -319,11 +285,9 @@ public class ModifiedPomXMLEventReader
      *
      * @return the verbatim text of the element returned by {@link #peek()}.
      */
-    public String getPeekVerbatim()
-    {
-        if ( hasNext() )
-        {
-            return pom.substring( nextDelta + nextStart, nextDelta + nextEnd );
+    public String getPeekVerbatim() {
+        if (hasNext()) {
+            return pom.substring(nextDelta + nextStart, nextDelta + nextEnd);
         }
         return "";
     }
@@ -331,49 +295,35 @@ public class ModifiedPomXMLEventReader
     /**
      * {@inheritDoc}
      */
-    public boolean hasNext()
-    {
-        if ( next != null )
-        {
+    public boolean hasNext() {
+        if (next != null) {
             // fast path
             return true;
         }
-        if ( !backing.hasNext() )
-        {
+        if (!backing.hasNext()) {
             // fast path
             return false;
         }
-        try
-        {
+        try {
             next = backing.nextEvent();
             nextStart = nextEnd;
-            if ( backing.hasNext() )
-            {
+            if (backing.hasNext()) {
                 nextEnd = backing.peek().getLocation().getCharacterOffset();
             }
 
-            if ( nextEnd != -1 )
-            {
-                if ( !next.isCharacters() )
-                {
-                    while ( nextStart < nextEnd && nextStart < pom.length()
-                        && ( c( nextStart ) == '\n' || c( nextStart ) == '\r' ) )
-                    {
+            if (nextEnd != -1) {
+                if (!next.isCharacters()) {
+                    while (nextStart < nextEnd && nextStart < pom.length() && (c(nextStart) == '\n' || c(nextStart) == '\r')) {
                         nextStart++;
                     }
-                }
-                else
-                {
-                    while ( nextEndIncludesNextEvent() || nextEndIncludesNextEndElement() )
-                    {
+                } else {
+                    while (nextEndIncludesNextEvent() || nextEndIncludesNextEndElement()) {
                         nextEnd--;
                     }
                 }
             }
             return nextStart < pom.length();
-        }
-        catch ( XMLStreamException e )
-        {
+        } catch (XMLStreamException e) {
             return false;
         }
     }
@@ -383,11 +333,9 @@ public class ModifiedPomXMLEventReader
      *
      * @return Value for property 'verbatim'.
      */
-    public String getVerbatim()
-    {
-        if ( lastStart >= 0 && lastEnd >= lastStart )
-        {
-            return pom.substring( lastDelta + lastStart, lastDelta + lastEnd );
+    public String getVerbatim() {
+        if (lastStart >= 0 && lastEnd >= lastStart) {
+            return pom.substring(lastDelta + lastStart, lastDelta + lastEnd);
         }
         return "";
     }
@@ -397,8 +345,7 @@ public class ModifiedPomXMLEventReader
      *
      * @param index the mark to set.
      */
-    public void mark( int index )
-    {
+    public void mark(int index) {
         markStart[index] = lastStart;
         markEnd[index] = lastEnd;
         markDelta[index] = lastDelta;
@@ -409,9 +356,8 @@ public class ModifiedPomXMLEventReader
      *
      * @return <code>true</code> if nextEnd is including the start of and end element.
      */
-    private boolean nextEndIncludesNextEndElement()
-    {
-        return ( nextEnd > nextStart + 2 && nextEnd - 2 < pom.length() && c( nextEnd - 2 ) == '<' );
+    private boolean nextEndIncludesNextEndElement() {
+        return (nextEnd > nextStart + 2 && nextEnd - 2 < pom.length() && c(nextEnd - 2) == '<');
     }
 
     /**
@@ -419,10 +365,8 @@ public class ModifiedPomXMLEventReader
      *
      * @return <code>true</code> if nextEnd is including the start of the next event.
      */
-    private boolean nextEndIncludesNextEvent()
-    {
-        return nextEnd > nextStart + 1 && nextEnd - 2 < pom.length()
-            && ( c( nextEnd - 1 ) == '<' || c( nextEnd - 1 ) == '&' );
+    private boolean nextEndIncludesNextEvent() {
+        return nextEnd > nextStart + 1 && nextEnd - 2 < pom.length() && (c(nextEnd - 1) == '<' || c(nextEnd - 1) == '&');
     }
 
     /**
@@ -431,9 +375,8 @@ public class ModifiedPomXMLEventReader
      * @param index the index.
      * @return char The character.
      */
-    private char c( int index )
-    {
-        return pom.charAt( nextDelta + index );
+    private char c(int index) {
+        return pom.charAt(nextDelta + index);
     }
 
     /**
@@ -441,25 +384,20 @@ public class ModifiedPomXMLEventReader
      *
      * @param replacement The replacement.
      */
-    public void replace( String replacement )
-    {
-        if ( lastStart < 0 || lastEnd < lastStart )
-        {
+    public void replace(String replacement) {
+        if (lastStart < 0 || lastEnd < lastStart) {
             throw new IllegalStateException();
         }
         int start = lastDelta + lastStart;
         int end = lastDelta + lastEnd;
-        if ( replacement.equals( pom.substring( start, end ) ) )
-        {
+        if (replacement.equals(pom.substring(start, end))) {
             return;
         }
-        pom.replace( start, end, replacement );
+        pom.replace(start, end, replacement);
         int delta = replacement.length() - lastEnd - lastStart;
         nextDelta += delta;
-        for ( int i = 0; i < MAX_MARKS; i++ )
-        {
-            if ( hasMark( i ) && lastStart == markStart[i] && markEnd[i] == lastEnd )
-            {
+        for (int i = 0; i < MAX_MARKS; i++) {
+            if (hasMark(i) && lastStart == markStart[i] && markEnd[i] == lastEnd) {
                 markEnd[i] += delta;
             }
         }
@@ -473,20 +411,17 @@ public class ModifiedPomXMLEventReader
      * @param index The mark.
      * @return <code>true</code> if the specified mark is defined.
      */
-    public boolean hasMark( int index )
-    {
+    public boolean hasMark(int index) {
         return markStart[index] != -1;
     }
 
-    public String getBetween( int index1, int index2 )
-    {
-        if ( !hasMark( index1 ) || !hasMark( index2 ) || markStart[index1] > markStart[index2] )
-        {
+    public String getBetween(int index1, int index2) {
+        if (!hasMark(index1) || !hasMark(index2) || markStart[index1] > markStart[index2]) {
             throw new IllegalStateException();
         }
         int start = markDelta[index1] + markEnd[index1];
         int end = markDelta[index2] + markStart[index2];
-        return pom.substring( start, end );
+        return pom.substring(start, end);
 
     }
 
@@ -497,38 +432,28 @@ public class ModifiedPomXMLEventReader
      * @param index2 The event mark to replace before.
      * @param replacement The replacement.
      */
-    public void replaceBetween( int index1, int index2, String replacement )
-    {
-        if ( !hasMark( index1 ) || !hasMark( index2 ) || markStart[index1] > markStart[index2] )
-        {
+    public void replaceBetween(int index1, int index2, String replacement) {
+        if (!hasMark(index1) || !hasMark(index2) || markStart[index1] > markStart[index2]) {
             throw new IllegalStateException();
         }
         int start = markDelta[index1] + markEnd[index1];
         int end = markDelta[index2] + markStart[index2];
-        if ( replacement.equals( pom.substring( start, end ) ) )
-        {
+        if (replacement.equals(pom.substring(start, end))) {
             return;
         }
-        pom.replace( start, end, replacement );
-        int delta = replacement.length() - ( end - start );
+        pom.replace(start, end, replacement);
+        int delta = replacement.length() - (end - start);
         nextDelta += delta;
 
-        for ( int i = 0; i < MAX_MARKS; i++ )
-        {
-            if ( i == index1 || i == index2 || markStart[i] == -1 )
-            {
+        for (int i = 0; i < MAX_MARKS; i++) {
+            if (i == index1 || i == index2 || markStart[i] == -1) {
                 continue;
             }
-            if ( markStart[i] > markStart[index2] )
-            {
+            if (markStart[i] > markStart[index2]) {
                 markDelta[i] += delta;
-            }
-            else if ( markStart[i] == markEnd[index1] && markEnd[i] == markStart[index1] )
-            {
+            } else if (markStart[i] == markEnd[index1] && markEnd[i] == markStart[index1]) {
                 markDelta[i] += delta;
-            }
-            else if ( markStart[i] > markEnd[index1] || markEnd[i] < markStart[index2] )
-            {
+            } else if (markStart[i] > markEnd[index1] || markEnd[i] < markStart[index2]) {
                 markStart[i] = -1;
             }
         }
@@ -542,41 +467,30 @@ public class ModifiedPomXMLEventReader
      * @param index The mark.
      * @param replacement The replacement.
      */
-    public void replaceMark( int index, String replacement )
-    {
-        if ( !hasMark( index ) )
-        {
+    public void replaceMark(int index, String replacement) {
+        if (!hasMark(index)) {
             throw new IllegalStateException();
         }
         int start = markDelta[index] + markStart[index];
         int end = markDelta[index] + markEnd[index];
-        if ( replacement.equals( pom.substring( start, end ) ) )
-        {
+        if (replacement.equals(pom.substring(start, end))) {
             return;
         }
-        pom.replace( start, end, replacement );
+        pom.replace(start, end, replacement);
         int delta = replacement.length() - markEnd[index] - markStart[index];
         nextDelta += delta;
-        if ( lastStart == markStart[index] && lastEnd == markEnd[index] )
-        {
+        if (lastStart == markStart[index] && lastEnd == markEnd[index]) {
             lastEnd += delta;
-        }
-        else if ( lastStart > markStart[index] )
-        {
+        } else if (lastStart > markStart[index]) {
             lastDelta += delta;
         }
-        for ( int i = 0; i < MAX_MARKS; i++ )
-        {
-            if ( i == index || markStart[i] == -1 )
-            {
+        for (int i = 0; i < MAX_MARKS; i++) {
+            if (i == index || markStart[i] == -1) {
                 continue;
             }
-            if ( markStart[i] > markStart[index] )
-            {
+            if (markStart[i] > markStart[index]) {
                 markDelta[i] += delta;
-            }
-            else if ( markStart[i] == markStart[index] && markEnd[i] == markEnd[index] )
-            {
+            } else if (markStart[i] == markStart[index] && markEnd[i] == markEnd[index]) {
                 markDelta[i] += delta;
             }
         }
@@ -584,11 +498,9 @@ public class ModifiedPomXMLEventReader
         modified = true;
     }
 
-    public Model parse()
-        throws IOException, XmlPullParserException
-    {
+    public Model parse() throws IOException, XmlPullParserException {
         MavenXpp3Reader reader = new MavenXpp3Reader();
-        return reader.read( new StringReader( pom.toString() ) );
+        return reader.read(new StringReader(pom.toString()));
     }
 
 }

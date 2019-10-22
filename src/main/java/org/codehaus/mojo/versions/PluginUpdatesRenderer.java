@@ -40,94 +40,76 @@ import org.codehaus.plexus.i18n.I18N;
 /**
  * @since 1.0-beta-1
  */
-public class PluginUpdatesRenderer
-    extends AbstractVersionsReportRenderer
-{
+public class PluginUpdatesRenderer extends AbstractVersionsReportRenderer {
     private final Map<Plugin, PluginUpdatesDetails> pluginUpdates;
 
     private final Map<Plugin, PluginUpdatesDetails> pluginManagementUpdates;
 
-    public PluginUpdatesRenderer( Sink sink, I18N i18n, String bundleName, Locale locale,
-                                  Map<Plugin, PluginUpdatesDetails> pluginUpdates,
-                                  Map<Plugin, PluginUpdatesDetails> pluginManagementUpdates )
-    {
-        super( sink, bundleName, i18n, locale );
+    public PluginUpdatesRenderer(Sink sink, I18N i18n, String bundleName, Locale locale, Map<Plugin, PluginUpdatesDetails> pluginUpdates,
+            Map<Plugin, PluginUpdatesDetails> pluginManagementUpdates) {
+        super(sink, bundleName, i18n, locale);
         this.pluginUpdates = pluginUpdates;
         this.pluginManagementUpdates = pluginManagementUpdates;
     }
 
-    protected void renderBody()
-    {
-        Map<Plugin, PluginUpdatesDetails> allUpdates = new TreeMap<>( new PluginComparator() );
-        allUpdates.putAll( pluginManagementUpdates );
-        allUpdates.putAll( pluginUpdates );
+    @Override
+    protected void renderBody() {
+        Map<Plugin, PluginUpdatesDetails> allUpdates = new TreeMap<>(new PluginComparator());
+        allUpdates.putAll(pluginManagementUpdates);
+        allUpdates.putAll(pluginUpdates);
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( getText( "report.overview.title" ) );
+        sink.text(getText("report.overview.title"));
         sink.sectionTitle1_();
         sink.paragraph();
-        sink.text( getText( "report.overview.text" ) );
+        sink.text(getText("report.overview.text"));
         sink.paragraph_();
 
-        renderSummaryTotalsTable( allUpdates );
+        renderSummaryTotalsTable(allUpdates);
 
-        renderSummaryTable( "report.overview.pluginManagement", pluginManagementUpdates,
-                            "report.overview.noPluginManagement" );
+        renderSummaryTable("report.overview.pluginManagement", pluginManagementUpdates, "report.overview.noPluginManagement");
 
-        renderSummaryTable( "report.overview.plugin", pluginUpdates, "report.overview.noPlugin" );
+        renderSummaryTable("report.overview.plugin", pluginUpdates, "report.overview.noPlugin");
 
         sink.section1_();
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( getText( "report.detail.title" ) );
+        sink.text(getText("report.detail.title"));
         sink.sectionTitle1_();
         sink.paragraph();
-        sink.text( getText( "report.detail.text" ) );
+        sink.text(getText("report.detail.text"));
         sink.paragraph_();
 
-        for ( final Map.Entry<Plugin, PluginUpdatesDetails> entry : allUpdates.entrySet() )
-        {
-            renderPluginDetail( entry.getKey(), entry.getValue() );
+        for (final Map.Entry<Plugin, PluginUpdatesDetails> entry : allUpdates.entrySet()) {
+            renderPluginDetail(entry.getKey(), entry.getValue());
         }
         sink.section1_();
 
     }
 
-    private void renderSummaryTotalsTable( Map<Plugin, PluginUpdatesDetails> allUpdates )
-    {
+    private void renderSummaryTotalsTable(Map<Plugin, PluginUpdatesDetails> allUpdates) {
         int numInc = 0;
         int numMin = 0;
         int numMaj = 0;
         int numAny = 0;
         int numCur = 0;
         int numDep = 0;
-        for ( PluginUpdatesDetails pluginDetails : allUpdates.values() )
-        {
+        for (PluginUpdatesDetails pluginDetails : allUpdates.values()) {
             ArtifactVersions details = pluginDetails.getArtifactVersions();
-            if ( details.getOldestUpdate( UpdateScope.SUBINCREMENTAL ) != null )
-            {
+            if (details.getOldestUpdate(UpdateScope.SUBINCREMENTAL) != null) {
                 numAny++;
-            }
-            else if ( details.getOldestUpdate( UpdateScope.INCREMENTAL ) != null )
-            {
+            } else if (details.getOldestUpdate(UpdateScope.INCREMENTAL) != null) {
                 numInc++;
-            }
-            else if ( details.getOldestUpdate( UpdateScope.MINOR ) != null )
-            {
+            } else if (details.getOldestUpdate(UpdateScope.MINOR) != null) {
                 numMin++;
-            }
-            else if ( details.getOldestUpdate( UpdateScope.MAJOR ) != null )
-            {
+            } else if (details.getOldestUpdate(UpdateScope.MAJOR) != null) {
                 numMaj++;
-            }
-            else
-            {
+            } else {
                 numCur++;
             }
-            if ( pluginDetails.isDependencyUpdateAvailable() )
-            {
+            if (pluginDetails.isDependencyUpdateAvailable()) {
                 numDep++;
             }
         }
@@ -137,21 +119,10 @@ public class PluginUpdatesRenderer
         renderSuccessIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numUpToDate" ) );
+        sink.text(getText("report.overview.numUpToDate"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numCur ) );
-        sink.tableCell_();
-        sink.tableRow_();
-        sink.tableRow();
-        sink.tableCell();
-        renderWarningIcon();
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( getText( "report.overview.numNewerVersionAvailable" ) );
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( Integer.toString( numAny ) );
+        sink.text(Integer.toString(numCur));
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
@@ -159,21 +130,10 @@ public class PluginUpdatesRenderer
         renderWarningIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numNewerIncrementalAvailable" ) );
+        sink.text(getText("report.overview.numNewerVersionAvailable"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numInc ) );
-        sink.tableCell_();
-        sink.tableRow_();
-        sink.tableRow();
-        sink.tableCell();
-        renderWarningIcon();
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( getText( "report.overview.numNewerMinorAvailable" ) );
-        sink.tableCell_();
-        sink.tableCell();
-        sink.text( Integer.toString( numMin ) );
+        sink.text(Integer.toString(numAny));
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
@@ -181,10 +141,10 @@ public class PluginUpdatesRenderer
         renderWarningIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numNewerMajorAvailable" ) );
+        sink.text(getText("report.overview.numNewerIncrementalAvailable"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numMaj ) );
+        sink.text(Integer.toString(numInc));
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
@@ -192,35 +152,52 @@ public class PluginUpdatesRenderer
         renderWarningIcon();
         sink.tableCell_();
         sink.tableCell();
-        sink.text( getText( "report.overview.numNewerDependenciesAvailable" ) );
+        sink.text(getText("report.overview.numNewerMinorAvailable"));
         sink.tableCell_();
         sink.tableCell();
-        sink.text( Integer.toString( numDep ) );
+        sink.text(Integer.toString(numMin));
+        sink.tableCell_();
+        sink.tableRow_();
+        sink.tableRow();
+        sink.tableCell();
+        renderWarningIcon();
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(getText("report.overview.numNewerMajorAvailable"));
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(Integer.toString(numMaj));
+        sink.tableCell_();
+        sink.tableRow_();
+        sink.tableRow();
+        sink.tableCell();
+        renderWarningIcon();
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(getText("report.overview.numNewerDependenciesAvailable"));
+        sink.tableCell_();
+        sink.tableCell();
+        sink.text(Integer.toString(numDep));
         sink.tableCell_();
         sink.tableRow_();
         sink.table_();
     }
 
-    private void renderSummaryTable( String titleKey, Map<Plugin, PluginUpdatesDetails> contents, String emptyKey )
-    {
+    private void renderSummaryTable(String titleKey, Map<Plugin, PluginUpdatesDetails> contents, String emptyKey) {
         sink.section2();
         sink.sectionTitle2();
-        sink.text( getText( titleKey ) );
+        sink.text(getText(titleKey));
         sink.sectionTitle2_();
 
-        if ( contents.isEmpty() )
-        {
+        if (contents.isEmpty()) {
             sink.paragraph();
-            sink.text( getText( emptyKey ) );
+            sink.text(getText(emptyKey));
             sink.paragraph_();
-        }
-        else
-        {
+        } else {
             sink.table();
             renderSummaryTableHeader();
-            for ( final Map.Entry<Plugin, PluginUpdatesDetails> entry : contents.entrySet() )
-            {
-                renderPluginSummary( entry.getKey(), entry.getValue() );
+            for (final Map.Entry<Plugin, PluginUpdatesDetails> entry : contents.entrySet()) {
+                renderPluginSummary(entry.getKey(), entry.getValue());
             }
             renderSummaryTableHeader();
             sink.table_();
@@ -228,113 +205,99 @@ public class PluginUpdatesRenderer
         sink.section2_();
     }
 
-    private void renderSummaryTableHeader()
-    {
+    private void renderSummaryTableHeader() {
         sink.tableRow();
         sink.tableHeaderCell();
-        sink.text( getText( "report.status" ) );
+        sink.text(getText("report.status"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.groupId" ) );
+        sink.text(getText("report.groupId"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.artifactId" ) );
+        sink.text(getText("report.artifactId"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.currentVersion" ) );
+        sink.text(getText("report.currentVersion"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.nextVersion" ) );
+        sink.text(getText("report.nextVersion"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.nextIncremental" ) );
+        sink.text(getText("report.nextIncremental"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.nextMinor" ) );
+        sink.text(getText("report.nextMinor"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.nextMajor" ) );
+        sink.text(getText("report.nextMajor"));
         sink.tableHeaderCell_();
         sink.tableHeaderCell();
-        sink.text( getText( "report.dependencyStatus" ) );
+        sink.text(getText("report.dependencyStatus"));
         sink.tableHeaderCell_();
         sink.tableRow_();
     }
 
-    private void renderPluginSummary( Plugin plugin, PluginUpdatesDetails details )
-    {
+    private void renderPluginSummary(Plugin plugin, PluginUpdatesDetails details) {
         sink.tableRow();
         sink.tableCell();
-        if ( !details.isUpdateAvailable() )
-        {
+        if (!details.isUpdateAvailable()) {
             renderSuccessIcon();
-        }
-        else
-        {
+        } else {
             renderWarningIcon();
         }
         sink.tableCell_();
         sink.tableCell();
-        sink.text( plugin.getGroupId() );
+        sink.text(plugin.getGroupId());
         sink.tableCell_();
         sink.tableCell();
-        sink.text( plugin.getArtifactId() );
+        sink.text(plugin.getArtifactId());
         sink.tableCell_();
         sink.tableCell();
-        if ( !details.isArtifactUpdateAvailable() )
-        {
+        if (!details.isArtifactUpdateAvailable()) {
             safeBold();
         }
-        sink.text( plugin.getVersion() );
-        if ( !details.isArtifactUpdateAvailable() )
-        {
+        sink.text(plugin.getVersion());
+        if (!details.isArtifactUpdateAvailable()) {
             safeBold_();
         }
         sink.tableCell_();
 
         sink.tableCell();
-        if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.SUBINCREMENTAL ) != null )
-        {
+        if (details.getArtifactVersions().getOldestUpdate(UpdateScope.SUBINCREMENTAL) != null) {
             safeBold();
-            sink.text( details.getArtifactVersions().getOldestUpdate( UpdateScope.SUBINCREMENTAL ).toString() );
+            sink.text(details.getArtifactVersions().getOldestUpdate(UpdateScope.SUBINCREMENTAL).toString());
             safeBold_();
         }
         sink.tableCell_();
 
         sink.tableCell();
-        if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.INCREMENTAL ) != null )
-        {
+        if (details.getArtifactVersions().getOldestUpdate(UpdateScope.INCREMENTAL) != null) {
             safeBold();
-            sink.text( details.getArtifactVersions().getOldestUpdate( UpdateScope.INCREMENTAL ).toString() );
+            sink.text(details.getArtifactVersions().getOldestUpdate(UpdateScope.INCREMENTAL).toString());
             safeBold_();
         }
         sink.tableCell_();
 
         sink.tableCell();
-        if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.MINOR ) != null )
-        {
+        if (details.getArtifactVersions().getOldestUpdate(UpdateScope.MINOR) != null) {
             safeBold();
-            sink.text( details.getArtifactVersions().getOldestUpdate( UpdateScope.MINOR ).toString() );
+            sink.text(details.getArtifactVersions().getOldestUpdate(UpdateScope.MINOR).toString());
             safeBold_();
         }
         sink.tableCell_();
 
         sink.tableCell();
-        if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.MAJOR ) != null )
-        {
+        if (details.getArtifactVersions().getOldestUpdate(UpdateScope.MAJOR) != null) {
             safeBold();
-            sink.text( details.getArtifactVersions().getOldestUpdate( UpdateScope.MAJOR ).toString() );
+            sink.text(details.getArtifactVersions().getOldestUpdate(UpdateScope.MAJOR).toString());
             safeBold_();
         }
         sink.tableCell_();
 
         sink.tableCell();
-        if ( details.isDependencyUpdateAvailable() )
-        {
+        if (details.isDependencyUpdateAvailable()) {
             renderWarningIcon();
-        }
-        else
-        {
+        } else {
             renderSuccessIcon();
         }
         sink.tableCell_();
@@ -342,146 +305,109 @@ public class PluginUpdatesRenderer
         sink.tableRow_();
     }
 
-    private void renderPluginDetail( Plugin plugin, PluginUpdatesDetails details )
-    {
+    private void renderPluginDetail(Plugin plugin, PluginUpdatesDetails details) {
         final SinkEventAttributes headerAttributes = new SinkEventAttributeSet();
-        headerAttributes.addAttribute( SinkEventAttributes.WIDTH, "20%" );
+        headerAttributes.addAttribute(SinkEventAttributes.WIDTH, "20%");
         final SinkEventAttributes cellAttributes = new SinkEventAttributeSet();
-        headerAttributes.addAttribute( SinkEventAttributes.WIDTH, "80%" );
+        headerAttributes.addAttribute(SinkEventAttributes.WIDTH, "80%");
         sink.section2();
         sink.sectionTitle2();
-        sink.text( MessageFormat.format( getText( "report.plugin" ), new Object[] {
-            ArtifactUtils.versionlessKey( plugin.getGroupId(), plugin.getArtifactId() ) } ) );
+        sink.text(MessageFormat.format(getText("report.plugin"), new Object[] { ArtifactUtils.versionlessKey(plugin.getGroupId(), plugin.getArtifactId()) }));
         sink.sectionTitle2_();
         sink.table();
-        sink.tableRows( new int[] { Sink.JUSTIFY_RIGHT, Sink.JUSTIFY_LEFT }, false );
+        sink.tableRows(new int[] { Sink.JUSTIFY_RIGHT, Sink.JUSTIFY_LEFT }, false);
         sink.tableRow();
-        sink.tableHeaderCell( headerAttributes );
-        sink.text( getText( "report.status" ) );
+        sink.tableHeaderCell(headerAttributes);
+        sink.text(getText("report.status"));
         sink.tableHeaderCell_();
-        sink.tableCell( cellAttributes );
-        ArtifactVersion[] versions = details.getArtifactVersions().getAllUpdates( UpdateScope.ANY );
-        if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.SUBINCREMENTAL ) != null )
-        {
+        sink.tableCell(cellAttributes);
+        ArtifactVersion[] versions = details.getArtifactVersions().getAllUpdates(UpdateScope.ANY);
+        if (details.getArtifactVersions().getOldestUpdate(UpdateScope.SUBINCREMENTAL) != null) {
             renderWarningIcon();
             sink.nonBreakingSpace();
-            sink.text( getText( "report.otherUpdatesAvailable" ) );
-        }
-        else if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.INCREMENTAL ) != null )
-        {
+            sink.text(getText("report.otherUpdatesAvailable"));
+        } else if (details.getArtifactVersions().getOldestUpdate(UpdateScope.INCREMENTAL) != null) {
             renderWarningIcon();
             sink.nonBreakingSpace();
-            sink.text( getText( "report.incrementalUpdatesAvailable" ) );
-        }
-        else if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.MINOR ) != null )
-        {
+            sink.text(getText("report.incrementalUpdatesAvailable"));
+        } else if (details.getArtifactVersions().getOldestUpdate(UpdateScope.MINOR) != null) {
             renderWarningIcon();
             sink.nonBreakingSpace();
-            sink.text( getText( "report.minorUpdatesAvailable" ) );
-        }
-        else if ( details.getArtifactVersions().getOldestUpdate( UpdateScope.MAJOR ) != null )
-        {
+            sink.text(getText("report.minorUpdatesAvailable"));
+        } else if (details.getArtifactVersions().getOldestUpdate(UpdateScope.MAJOR) != null) {
             renderWarningIcon();
             sink.nonBreakingSpace();
-            sink.text( getText( "report.majorUpdatesAvailable" ) );
-        }
-        else
-        {
+            sink.text(getText("report.majorUpdatesAvailable"));
+        } else {
             renderSuccessIcon();
             sink.nonBreakingSpace();
-            sink.text( getText( "report.noUpdatesAvailable" ) );
+            sink.text(getText("report.noUpdatesAvailable"));
         }
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
-        sink.tableHeaderCell( headerAttributes );
-        sink.text( getText( "report.groupId" ) );
+        sink.tableHeaderCell(headerAttributes);
+        sink.text(getText("report.groupId"));
         sink.tableHeaderCell_();
-        sink.tableCell( cellAttributes );
-        sink.text( plugin.getGroupId() );
+        sink.tableCell(cellAttributes);
+        sink.text(plugin.getGroupId());
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
-        sink.tableHeaderCell( headerAttributes );
-        sink.text( getText( "report.artifactId" ) );
+        sink.tableHeaderCell(headerAttributes);
+        sink.text(getText("report.artifactId"));
         sink.tableHeaderCell_();
-        sink.tableCell( cellAttributes );
-        sink.text( plugin.getArtifactId() );
+        sink.tableCell(cellAttributes);
+        sink.text(plugin.getArtifactId());
         sink.tableCell_();
         sink.tableRow_();
         sink.tableRow();
-        sink.tableHeaderCell( headerAttributes );
-        sink.text( getText( "report.currentVersion" ) );
+        sink.tableHeaderCell(headerAttributes);
+        sink.text(getText("report.currentVersion"));
         sink.tableHeaderCell_();
-        sink.tableCell( cellAttributes );
-        sink.text( plugin.getVersion() );
+        sink.tableCell(cellAttributes);
+        sink.text(plugin.getVersion());
         sink.tableCell_();
         sink.tableRow_();
-        if ( versions.length > 0 )
-        {
+        if (versions.length > 0) {
             sink.tableRow();
-            sink.tableHeaderCell( headerAttributes );
-            sink.text( getText( "report.updateVersions" ) );
+            sink.tableHeaderCell(headerAttributes);
+            sink.text(getText("report.updateVersions"));
             sink.tableHeaderCell_();
-            sink.tableCell( cellAttributes );
-            for ( int i = 0; i < versions.length; i++ )
-            {
-                if ( i > 0 )
-                {
+            sink.tableCell(cellAttributes);
+            for (int i = 0; i < versions.length; i++) {
+                if (i > 0) {
                     sink.lineBreak();
                 }
-                boolean bold = equals( versions[i],
-                                       details.getArtifactVersions().getOldestUpdate( UpdateScope.SUBINCREMENTAL ) )
-                    || equals( versions[i], details.getArtifactVersions().getOldestUpdate( UpdateScope.INCREMENTAL ) )
-                    || equals( versions[i], details.getArtifactVersions().getNewestUpdate( UpdateScope.INCREMENTAL ) )
-                    || equals( versions[i], details.getArtifactVersions().getOldestUpdate( UpdateScope.MINOR ) )
-                    || equals( versions[i], details.getArtifactVersions().getNewestUpdate( UpdateScope.MINOR ) )
-                    || equals( versions[i], details.getArtifactVersions().getOldestUpdate( UpdateScope.MAJOR ) )
-                    || equals( versions[i], details.getArtifactVersions().getNewestUpdate( UpdateScope.MAJOR ) );
-                if ( bold )
-                {
+                boolean bold = equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.SUBINCREMENTAL))
+                        || equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.INCREMENTAL))
+                        || equals(versions[i], details.getArtifactVersions().getNewestUpdate(UpdateScope.INCREMENTAL))
+                        || equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.MINOR))
+                        || equals(versions[i], details.getArtifactVersions().getNewestUpdate(UpdateScope.MINOR))
+                        || equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.MAJOR))
+                        || equals(versions[i], details.getArtifactVersions().getNewestUpdate(UpdateScope.MAJOR));
+                if (bold) {
                     safeBold();
                 }
-                sink.text( versions[i].toString() );
-                if ( bold )
-                {
+                sink.text(versions[i].toString());
+                if (bold) {
                     safeBold_();
                     sink.nonBreakingSpace();
                     safeItalic();
-                    if ( equals( versions[i],
-                                 details.getArtifactVersions().getOldestUpdate( UpdateScope.SUBINCREMENTAL ) ) )
-                    {
-                        sink.text( getText( "report.nextVersion" ) );
-                    }
-                    else if ( equals( versions[i],
-                                      details.getArtifactVersions().getOldestUpdate( UpdateScope.INCREMENTAL ) ) )
-                    {
-                        sink.text( getText( "report.nextIncremental" ) );
-                    }
-                    else if ( equals( versions[i],
-                                      details.getArtifactVersions().getNewestUpdate( UpdateScope.INCREMENTAL ) ) )
-                    {
-                        sink.text( getText( "report.latestIncremental" ) );
-                    }
-                    else if ( equals( versions[i],
-                                      details.getArtifactVersions().getOldestUpdate( UpdateScope.MINOR ) ) )
-                    {
-                        sink.text( getText( "report.nextMinor" ) );
-                    }
-                    else if ( equals( versions[i],
-                                      details.getArtifactVersions().getNewestUpdate( UpdateScope.MINOR ) ) )
-                    {
-                        sink.text( getText( "report.latestMinor" ) );
-                    }
-                    else if ( equals( versions[i],
-                                      details.getArtifactVersions().getOldestUpdate( UpdateScope.MAJOR ) ) )
-                    {
-                        sink.text( getText( "report.nextMajor" ) );
-                    }
-                    else if ( equals( versions[i],
-                                      details.getArtifactVersions().getNewestUpdate( UpdateScope.MAJOR ) ) )
-                    {
-                        sink.text( getText( "report.latestMajor" ) );
+                    if (equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.SUBINCREMENTAL))) {
+                        sink.text(getText("report.nextVersion"));
+                    } else if (equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.INCREMENTAL))) {
+                        sink.text(getText("report.nextIncremental"));
+                    } else if (equals(versions[i], details.getArtifactVersions().getNewestUpdate(UpdateScope.INCREMENTAL))) {
+                        sink.text(getText("report.latestIncremental"));
+                    } else if (equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.MINOR))) {
+                        sink.text(getText("report.nextMinor"));
+                    } else if (equals(versions[i], details.getArtifactVersions().getNewestUpdate(UpdateScope.MINOR))) {
+                        sink.text(getText("report.latestMinor"));
+                    } else if (equals(versions[i], details.getArtifactVersions().getOldestUpdate(UpdateScope.MAJOR))) {
+                        sink.text(getText("report.nextMajor"));
+                    } else if (equals(versions[i], details.getArtifactVersions().getNewestUpdate(UpdateScope.MAJOR))) {
+                        sink.text(getText("report.latestMajor"));
                     }
 
                     safeItalic_();
@@ -493,35 +419,32 @@ public class PluginUpdatesRenderer
         sink.tableRows_();
         sink.table_();
 
-        if ( !details.getDependencyVersions().isEmpty() )
-        {
+        if (!details.getDependencyVersions().isEmpty()) {
             sink.section3();
             sink.sectionTitle3();
-            sink.text( MessageFormat.format( getText( "report.pluginDependencies" ), new Object[] {
-                ArtifactUtils.versionlessKey( plugin.getGroupId(), plugin.getArtifactId() ) } ) );
+            sink.text(MessageFormat.format(getText("report.pluginDependencies"),
+                    new Object[] { ArtifactUtils.versionlessKey(plugin.getGroupId(), plugin.getArtifactId()) }));
             sink.sectionTitle3_();
 
-            renderDependencySummaryTable( details.getDependencyVersions(), false, true, true );
+            renderDependencySummaryTable(details.getDependencyVersions(), false, true, true);
 
             sink.section3_();
 
-            for ( Iterator i = details.getDependencyVersions().entrySet().iterator(); i.hasNext(); )
-            {
+            for (Iterator i = details.getDependencyVersions().entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry) i.next();
-                renderDependencyDetail( (Dependency) entry.getKey(), (ArtifactVersions) entry.getValue() );
+                renderDependencyDetail((Dependency) entry.getKey(), (ArtifactVersions) entry.getValue());
             }
         }
         sink.section2_();
     }
 
-    private void renderDependencyDetail( Dependency dependency, ArtifactVersions details )
-    {
+    private void renderDependencyDetail(Dependency dependency, ArtifactVersions details) {
         sink.section3();
         sink.sectionTitle3();
-        sink.text( MessageFormat.format( getText( "report.pluginDependency" ), new Object[] {
-            ArtifactUtils.versionlessKey( dependency.getGroupId(), dependency.getArtifactId() ) } ) );
+        sink.text(MessageFormat.format(getText("report.pluginDependency"),
+                new Object[] { ArtifactUtils.versionlessKey(dependency.getGroupId(), dependency.getArtifactId()) }));
         sink.sectionTitle3_();
-        renderDependencyDetailTable( dependency, details, false, true, true );
+        renderDependencyDetailTable(dependency, details, false, true, true);
         sink.section3_();
     }
 

@@ -37,91 +37,66 @@ import org.codehaus.mojo.versions.ordering.VersionComparator;
  * @todo convert this class to a Java 1.5 enum once we move to Java 1.5
  * @since 1.0-beta-1
  */
-public abstract class UpdateScope
-    implements Comparable, Serializable
-{
+public abstract class UpdateScope implements Comparable, Serializable {
 
     /**
      * Versions which are less than an incremental update.
      *
      * @since 1.0-beta-1
      */
-    public static final UpdateScope SUBINCREMENTAL = new UpdateScope( "SUBINCREMENTAL", 0 )
-    {
+    public static final UpdateScope SUBINCREMENTAL = new UpdateScope("SUBINCREMENTAL", 0) {
         /** {@inheritDoc} */
-        public ArtifactVersion getOldestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getOldestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 3 ? null
-                            : versionDetails.getOldestVersion( currentVersion,
-                                                               versionComparator.incrementSegment( currentVersion, 2 ),
-                                                               includeSnapshots, false, false );
+            return versionComparator.getSegmentCount(currentVersion) < 3 ? null
+                    : versionDetails.getOldestVersion(currentVersion, versionComparator.incrementSegment(currentVersion, 2), includeSnapshots, false, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion getNewestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getNewestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 3 ? null
-                            : versionDetails.getNewestVersion( currentVersion,
-                                                               versionComparator.incrementSegment( currentVersion, 2 ),
-                                                               includeSnapshots, false, false );
+            return versionComparator.getSegmentCount(currentVersion) < 3 ? null
+                    : versionDetails.getNewestVersion(currentVersion, versionComparator.incrementSegment(currentVersion, 2), includeSnapshots, false, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion[] getAllUpdates( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion[] getAllUpdates(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 3 ? null
-                            : versionDetails.getVersions( currentVersion,
-                                                          versionComparator.incrementSegment( currentVersion, 2 ),
-                                                          includeSnapshots, false, false );
+            return versionComparator.getSegmentCount(currentVersion) < 3 ? null
+                    : versionDetails.getVersions(currentVersion, versionComparator.incrementSegment(currentVersion, 2), includeSnapshots, false, false);
         }
 
     };
 
     /**
-     * Incremental version updates, that is the third segment of the version number, for example <code>1.0.0.15</code>
-     * to <code>1.0.1.0</code>.
+     * Incremental version updates, that is the third segment of the version number, for example <code>1.0.0.15</code> to
+     * <code>1.0.1.0</code>.
      *
      * @since 1.0-beta-1
      */
-    public static final UpdateScope INCREMENTAL = new UpdateScope( "INCREMENTAL", 1 )
-    {
+    public static final UpdateScope INCREMENTAL = new UpdateScope("INCREMENTAL", 1) {
         /** {@inheritDoc} */
-        public ArtifactVersion getOldestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getOldestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 3 ? null
-                            : versionDetails.getOldestVersion( versionComparator.incrementSegment( currentVersion, 2 ),
-                                                               versionComparator.incrementSegment( currentVersion, 1 ),
-                                                               includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 3 ? null
+                    : versionDetails.getOldestVersion(versionComparator.incrementSegment(currentVersion, 2),
+                            versionComparator.incrementSegment(currentVersion, 1), includeSnapshots, true, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion getNewestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getNewestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 3 ? null
-                            : versionDetails.getNewestVersion( versionComparator.incrementSegment( currentVersion, 2 ),
-                                                               versionComparator.incrementSegment( currentVersion, 1 ),
-                                                               includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 3 ? null
+                    : versionDetails.getNewestVersion(versionComparator.incrementSegment(currentVersion, 2),
+                            versionComparator.incrementSegment(currentVersion, 1), includeSnapshots, true, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion[] getAllUpdates( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion[] getAllUpdates(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 3 ? null
-                            : versionDetails.getVersions( versionComparator.incrementSegment( currentVersion, 2 ),
-                                                          versionComparator.incrementSegment( currentVersion, 1 ),
-                                                          includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 3 ? null
+                    : versionDetails.getVersions(versionComparator.incrementSegment(currentVersion, 2), versionComparator.incrementSegment(currentVersion, 1),
+                            includeSnapshots, true, false);
         }
 
     };
@@ -132,39 +107,29 @@ public abstract class UpdateScope
      *
      * @since 1.0-beta-1
      */
-    public static final UpdateScope MINOR = new UpdateScope( "MINOR", 2 )
-    {
+    public static final UpdateScope MINOR = new UpdateScope("MINOR", 2) {
         /** {@inheritDoc} */
-        public ArtifactVersion getOldestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getOldestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 2 ? null
-                            : versionDetails.getOldestVersion( versionComparator.incrementSegment( currentVersion, 1 ),
-                                                               versionComparator.incrementSegment( currentVersion, 0 ),
-                                                               includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 2 ? null
+                    : versionDetails.getOldestVersion(versionComparator.incrementSegment(currentVersion, 1),
+                            versionComparator.incrementSegment(currentVersion, 0), includeSnapshots, true, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion getNewestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getNewestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 2 ? null
-                            : versionDetails.getNewestVersion( versionComparator.incrementSegment( currentVersion, 1 ),
-                                                               versionComparator.incrementSegment( currentVersion, 0 ),
-                                                               includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 2 ? null
+                    : versionDetails.getNewestVersion(versionComparator.incrementSegment(currentVersion, 1),
+                            versionComparator.incrementSegment(currentVersion, 0), includeSnapshots, true, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion[] getAllUpdates( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion[] getAllUpdates(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 2 ? null
-                            : versionDetails.getVersions( versionComparator.incrementSegment( currentVersion, 1 ),
-                                                          versionComparator.incrementSegment( currentVersion, 0 ),
-                                                          includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 2 ? null
+                    : versionDetails.getVersions(versionComparator.incrementSegment(currentVersion, 1), versionComparator.incrementSegment(currentVersion, 0),
+                            includeSnapshots, true, false);
         }
 
     };
@@ -175,36 +140,26 @@ public abstract class UpdateScope
      *
      * @since 1.0-beta-1
      */
-    public static final UpdateScope MAJOR = new UpdateScope( "MAJOR", 3 )
-    {
+    public static final UpdateScope MAJOR = new UpdateScope("MAJOR", 3) {
         /** {@inheritDoc} */
-        public ArtifactVersion getOldestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getOldestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 1 ? null
-                            : versionDetails.getOldestVersion( versionComparator.incrementSegment( currentVersion, 0 ),
-                                                               null, includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 1 ? null
+                    : versionDetails.getOldestVersion(versionComparator.incrementSegment(currentVersion, 0), null, includeSnapshots, true, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion getNewestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion getNewestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 1 ? null
-                            : versionDetails.getNewestVersion( versionComparator.incrementSegment( currentVersion, 0 ),
-                                                               null, includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 1 ? null
+                    : versionDetails.getNewestVersion(versionComparator.incrementSegment(currentVersion, 0), null, includeSnapshots, true, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion[] getAllUpdates( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
+        public ArtifactVersion[] getAllUpdates(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
             VersionComparator versionComparator = versionDetails.getVersionComparator();
-            return versionComparator.getSegmentCount( currentVersion ) < 1 ? null
-                            : versionDetails.getVersions( versionComparator.incrementSegment( currentVersion, 0 ), null,
-                                                          includeSnapshots, true, false );
+            return versionComparator.getSegmentCount(currentVersion) < 1 ? null
+                    : versionDetails.getVersions(versionComparator.incrementSegment(currentVersion, 0), null, includeSnapshots, true, false);
         }
 
     };
@@ -214,27 +169,20 @@ public abstract class UpdateScope
      *
      * @since 1.0-beta-1
      */
-    public static final UpdateScope ANY = new UpdateScope( "ANY", 4 )
-    {
+    public static final UpdateScope ANY = new UpdateScope("ANY", 4) {
         /** {@inheritDoc} */
-        public ArtifactVersion getOldestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
-            return versionDetails.getOldestVersion( currentVersion, null, includeSnapshots, false, false );
+        public ArtifactVersion getOldestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
+            return versionDetails.getOldestVersion(currentVersion, null, includeSnapshots, false, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion getNewestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
-            return versionDetails.getNewestVersion( currentVersion, null, includeSnapshots, false, false );
+        public ArtifactVersion getNewestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
+            return versionDetails.getNewestVersion(currentVersion, null, includeSnapshots, false, false);
         }
 
         /** {@inheritDoc} */
-        public ArtifactVersion[] getAllUpdates( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                boolean includeSnapshots )
-        {
-            return versionDetails.getVersions( currentVersion, null, includeSnapshots, false, false );
+        public ArtifactVersion[] getAllUpdates(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots) {
+            return versionDetails.getVersions(currentVersion, null, includeSnapshots, false, false);
         }
 
     };
@@ -248,8 +196,7 @@ public abstract class UpdateScope
      * @return The next version within this scope or <code>null</code> if there is no version within this scope.
      * @throws ArtifactMetadataRetrievalException if there was a problem retrieving the list of available versions.
      */
-    public abstract ArtifactVersion getOldestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                     boolean includeSnapshots );
+    public abstract ArtifactVersion getOldestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots);
 
     /**
      * Returns the newest version after the specified current version within this scope.
@@ -259,8 +206,7 @@ public abstract class UpdateScope
      * @param includeSnapshots Whether to include snapshots.
      * @return The newest version within this scope or <code>null</code> if there is no version within this scope.
      */
-    public abstract ArtifactVersion getNewestUpdate( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                     boolean includeSnapshots );
+    public abstract ArtifactVersion getNewestUpdate(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots);
 
     /**
      * Returns all versions newer than the specified current version within this scope.
@@ -270,12 +216,11 @@ public abstract class UpdateScope
      * @param includeSnapshots Whether to include snapshots.
      * @return All newer versions within this scope.
      */
-    public abstract ArtifactVersion[] getAllUpdates( VersionDetails versionDetails, ArtifactVersion currentVersion,
-                                                     boolean includeSnapshots );
+    public abstract ArtifactVersion[] getAllUpdates(VersionDetails versionDetails, ArtifactVersion currentVersion, boolean includeSnapshots);
 
     /**
-     * The name of this constant, as declared in the declaration. Most programmers should use the {@link #toString}
-     * method rather than accessing this field.
+     * The name of this constant, as declared in the declaration. Most programmers should use the {@link #toString} method
+     * rather than accessing this field.
      */
     private final String name;
 
@@ -288,8 +233,7 @@ public abstract class UpdateScope
      *
      * @return the name of this enum constant
      */
-    public final String name()
-    {
+    public final String name() {
         return name;
     }
 
@@ -302,15 +246,14 @@ public abstract class UpdateScope
     private final int ordinal;
 
     /**
-     * Returns the ordinal of this enumeration constant (its position in its enum declaration, where the initial
-     * constant is assigned an ordinal of zero).
+     * Returns the ordinal of this enumeration constant (its position in its enum declaration, where the initial constant is
+     * assigned an ordinal of zero).
      * <p/>
      * Most programmers will have no use for this method.
      *
      * @return the ordinal of this enumeration constant
      */
-    public final int ordinal()
-    {
+    public final int ordinal() {
         return ordinal;
     }
 
@@ -318,11 +261,10 @@ public abstract class UpdateScope
      * Sole constructor. Programmers cannot invoke this constructor.
      *
      * @param name - The name of this enum constant, which is the identifier used to declare it.
-     * @param ordinal - The ordinal of this enumeration constant (its position in the enum declaration, where the
-     *            initial constant is assigned an ordinal of zero).
+     * @param ordinal - The ordinal of this enumeration constant (its position in the enum declaration, where the initial
+     * constant is assigned an ordinal of zero).
      */
-    private UpdateScope( String name, int ordinal )
-    {
+    private UpdateScope(String name, int ordinal) {
         this.name = name;
         this.ordinal = ordinal;
     }
@@ -330,52 +272,45 @@ public abstract class UpdateScope
     /**
      * {@inheritDoc}
      */
-    public String toString()
-    {
+    public String toString() {
         return name;
     }
 
     /**
      * {@inheritDoc}
      */
-    public boolean equals( Object o )
-    {
+    public boolean equals(Object o) {
         return this == o;
     }
 
     /**
      * {@inheritDoc}
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         return super.hashCode();
     }
 
     /**
-     * Throws CloneNotSupportedException. This guarantees that levels are never cloned, which is necessary to preserve
-     * their "singleton" status.
+     * Throws CloneNotSupportedException. This guarantees that levels are never cloned, which is necessary to preserve their
+     * "singleton" status.
      *
      * @return (neverreturns)
      */
-    protected final Object clone()
-        throws CloneNotSupportedException
-    {
+    protected final Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 
     /**
-     * Compares this enum with the specified object for order. Returns a negative integer, zero, or a positive integer
-     * as this object is less than, equal to, or greater than the specified object.
+     * Compares this enum with the specified object for order. Returns a negative integer, zero, or a positive integer as
+     * this object is less than, equal to, or greater than the specified object.
      * <p/>
-     * Enum constants are only comparable to other enum constants of the same enum type. The natural order implemented
-     * by this method is the order in which the constants are declared.
+     * Enum constants are only comparable to other enum constants of the same enum type. The natural order implemented by
+     * this method is the order in which the constants are declared.
      */
-    public final int compareTo( Object o )
-    {
+    public final int compareTo(Object o) {
         UpdateScope other = (UpdateScope) o;
         UpdateScope self = this;
-        if ( self.getClass() != other.getClass() )
-        {
+        if (self.getClass() != other.getClass()) {
             throw new ClassCastException();
         }
         return self.ordinal - other.ordinal;
@@ -383,14 +318,13 @@ public abstract class UpdateScope
 
     /**
      * Returns the Class object corresponding to this enum constant's enum type. Two enum constants e1 and e2 are of the
-     * same enum type if and only if e1.getDeclaringClass() == e2.getDeclaringClass(). (The value returned by this
-     * method may differ from the one returned by the {@link Object#getClass} method for enum constants with
-     * constant-specific class bodies.)
+     * same enum type if and only if e1.getDeclaringClass() == e2.getDeclaringClass(). (The value returned by this method
+     * may differ from the one returned by the {@link Object#getClass} method for enum constants with constant-specific
+     * class bodies.)
      *
      * @return the Class object corresponding to this enum constant's enum type
      */
-    public final Class getDeclaringClass()
-    {
+    public final Class getDeclaringClass() {
         return getClass();
     }
 
@@ -400,26 +334,22 @@ public abstract class UpdateScope
      *
      * @param name the name of the constant to return
      * @return the enum constant of the specified enum type with the specified name
-     * @throws IllegalArgumentException if the specified enum type has no constant with the specified name, or the
-     *             specified class object does not represent an enum type
+     * @throws IllegalArgumentException if the specified enum type has no constant with the specified name, or the specified
+     * class object does not represent an enum type
      * @throws NullPointerException if <tt>enumType</tt> or <tt>name</tt> is null
      */
-    public static UpdateScope valueOf( String name )
-    {
-        UpdateScope result = (UpdateScope) levelConstants.get( name );
-        if ( result != null )
-        {
+    public static UpdateScope valueOf(String name) {
+        UpdateScope result = (UpdateScope) levelConstants.get(name);
+        if (result != null) {
             return result;
         }
-        if ( name == null )
-        {
-            throw new NullPointerException( "Name is null" );
+        if (name == null) {
+            throw new NullPointerException("Name is null");
         }
-        throw new IllegalArgumentException( "No enum const " + UpdateScope.class.getName() + "." + name );
+        throw new IllegalArgumentException("No enum const " + UpdateScope.class.getName() + "." + name);
     }
 
-    public static UpdateScope[] values()
-    {
+    public static UpdateScope[] values() {
         return new UpdateScope[] { SUBINCREMENTAL, INCREMENTAL, MINOR, MAJOR, ANY };
     }
 
@@ -431,58 +361,49 @@ public abstract class UpdateScope
      * @param to The second version.
      * @return The update classification.
      */
-    public static UpdateScope classifyUpdate( VersionComparator comparator, ArtifactVersion from, ArtifactVersion to )
-    {
-        if ( comparator.compare( from, to ) >= 0 )
-        {
-            throw new IllegalArgumentException( "From version must be less than to version" );
+    public static UpdateScope classifyUpdate(VersionComparator comparator, ArtifactVersion from, ArtifactVersion to) {
+        if (comparator.compare(from, to) >= 0) {
+            throw new IllegalArgumentException("From version must be less than to version");
         }
         // the trick here is that incrementing from twice and to once, should give the same version
         int matchSegment = 0;
-        for ( int segment =
-            Math.min( comparator.getSegmentCount( from ), comparator.getSegmentCount( to ) ); segment > 0; segment-- )
-        {
-            ArtifactVersion f = comparator.incrementSegment( from, segment - 1 );
-            f = comparator.incrementSegment( f, segment - 1 );
-            ArtifactVersion t = comparator.incrementSegment( to, segment - 1 );
-            if ( f.toString().equals( t.toString() ) )
-            {
+        for (int segment = Math.min(comparator.getSegmentCount(from), comparator.getSegmentCount(to)); segment > 0; segment--) {
+            ArtifactVersion f = comparator.incrementSegment(from, segment - 1);
+            f = comparator.incrementSegment(f, segment - 1);
+            ArtifactVersion t = comparator.incrementSegment(to, segment - 1);
+            if (f.toString().equals(t.toString())) {
                 matchSegment = segment;
                 break;
             }
         }
-        switch ( matchSegment )
-        {
-            case 0:
-                return MAJOR;
-            case 1:
-                return MINOR;
-            case 2:
-                return INCREMENTAL;
-            default:
-                return SUBINCREMENTAL;
+        switch (matchSegment) {
+        case 0:
+            return MAJOR;
+        case 1:
+            return MINOR;
+        case 2:
+            return INCREMENTAL;
+        default:
+            return SUBINCREMENTAL;
         }
     }
 
     private static final Map levelConstants;
 
-    static
-    {
-        Map map = new HashMap( 5 );
-        map.put( SUBINCREMENTAL.name(), SUBINCREMENTAL );
-        map.put( INCREMENTAL.name(), INCREMENTAL );
-        map.put( MINOR.name(), MINOR );
-        map.put( MAJOR.name(), MAJOR );
-        map.put( ANY.name(), ANY );
+    static {
+        Map map = new HashMap(5);
+        map.put(SUBINCREMENTAL.name(), SUBINCREMENTAL);
+        map.put(INCREMENTAL.name(), INCREMENTAL);
+        map.put(MINOR.name(), MINOR);
+        map.put(MAJOR.name(), MAJOR);
+        map.put(ANY.name(), ANY);
         levelConstants = map;
     }
 
     /**
      * enum classes cannot have finalize methods.
      */
-    protected final void finalize()
-        throws Throwable
-    {
+    protected final void finalize() throws Throwable {
         super.finalize();
     }
 
@@ -492,27 +413,20 @@ public abstract class UpdateScope
      * @return The correct singleton instance.
      * @throws java.io.ObjectStreamException when things go wrong.
      */
-    private Object readResolve()
-        throws ObjectStreamException
-    {
-        if ( ordinal == SUBINCREMENTAL.ordinal )
-        {
+    private Object readResolve() throws ObjectStreamException {
+        if (ordinal == SUBINCREMENTAL.ordinal) {
             return SUBINCREMENTAL;
         }
-        if ( ordinal == INCREMENTAL.ordinal )
-        {
+        if (ordinal == INCREMENTAL.ordinal) {
             return INCREMENTAL;
         }
-        if ( ordinal == MINOR.ordinal )
-        {
+        if (ordinal == MINOR.ordinal) {
             return MINOR;
         }
-        if ( ordinal == MAJOR.ordinal )
-        {
+        if (ordinal == MAJOR.ordinal) {
             return MAJOR;
         }
-        if ( ordinal == ANY.ordinal )
-        {
+        if (ordinal == ANY.ordinal) {
             return ANY;
         }
         throw new StreamCorruptedException();

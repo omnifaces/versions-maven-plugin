@@ -1,5 +1,12 @@
 package org.codehaus.mojo.versions;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,30 +40,21 @@ import org.codehaus.mojo.versions.api.PomHelper;
 import org.codehaus.mojo.versions.ordering.VersionComparator;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Replaces any release versions with the next snapshot version (if it has been deployed).
  *
  * @author Stephen Connolly
  * @since 1.0-beta-1
  */
-@Mojo( name = "use-next-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UseNextSnapshotsMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "use-next-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UseNextSnapshotsMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     /**
      * Whether to allow the major version number to be changed.
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "allowMajorUpdates", defaultValue = "false" )
+    @Parameter(property = "allowMajorUpdates", defaultValue = "false")
     private boolean allowMajorUpdates;
 
     /**
@@ -64,7 +62,7 @@ public class UseNextSnapshotsMojo
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "allowMinorUpdates", defaultValue = "false" )
+    @Parameter(property = "allowMinorUpdates", defaultValue = "false")
     private boolean allowMinorUpdates;
 
     /**
@@ -72,7 +70,7 @@ public class UseNextSnapshotsMojo
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "allowIncrementalUpdates", defaultValue = "true" )
+    @Parameter(property = "allowIncrementalUpdates", defaultValue = "true")
     private boolean allowIncrementalUpdates;
 
     // ------------------------------ FIELDS ------------------------------
@@ -80,7 +78,7 @@ public class UseNextSnapshotsMojo
     /**
      * Pattern to match a snapshot version.
      */
-    public final Pattern matchSnapshotRegex = Pattern.compile( "^(.+)-((SNAPSHOT)|(\\d{8}\\.\\d{6}-\\d+))$" );
+    public final Pattern matchSnapshotRegex = Pattern.compile("^(.+)-((SNAPSHOT)|(\\d{8}\\.\\d{6}-\\d+))$");
 
     // ------------------------------ METHODS --------------------------
 
@@ -91,72 +89,55 @@ public class UseNextSnapshotsMojo
      * @throws javax.xml.stream.XMLStreamException when things go wrong with XML streaming
      * @see org.codehaus.mojo.versions.AbstractVersionsUpdaterMojo#update(org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        try
-        {
-            if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-            {
-                useNextSnapshots( pom, getProject().getDependencyManagement().getDependencies() );
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        try {
+            if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+                useNextSnapshots(pom, getProject().getDependencyManagement().getDependencies());
             }
-            if ( getProject().getDependencies() != null && isProcessingDependencies() )
-            {
-                useNextSnapshots( pom, getProject().getDependencies() );
+            if (getProject().getDependencies() != null && isProcessingDependencies()) {
+                useNextSnapshots(pom, getProject().getDependencies());
             }
-        }
-        catch ( ArtifactMetadataRetrievalException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        } catch (ArtifactMetadataRetrievalException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private void useNextSnapshots( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException
-    {
-        int segment = determineUnchangedSegment( allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates );
+    private void useNextSnapshots(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies)
+            throws XMLStreamException, MojoExecutionException, ArtifactMetadataRetrievalException {
+        int segment = determineUnchangedSegment(allowMajorUpdates, allowMinorUpdates, allowIncrementalUpdates);
 
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
             String version = dep.getVersion();
-            Matcher versionMatcher = matchSnapshotRegex.matcher( version );
-            if ( !versionMatcher.matches() )
-            {
-                getLog().debug( "Looking for next snapshot of " + toString( dep ) );
-                Artifact artifact = this.toArtifact( dep );
-                if ( !isIncluded( artifact ) )
-                {
+            Matcher versionMatcher = matchSnapshotRegex.matcher(version);
+            if (!versionMatcher.matches()) {
+                getLog().debug("Looking for next snapshot of " + toString(dep));
+                Artifact artifact = this.toArtifact(dep);
+                if (!isIncluded(artifact)) {
                     continue;
                 }
 
-                ArtifactVersions versions = getHelper().lookupArtifactVersions( artifact, false );
+                ArtifactVersions versions = getHelper().lookupArtifactVersions(artifact, false);
                 final VersionComparator versionComparator = versions.getVersionComparator();
-                final DefaultArtifactVersion lowerBound = new DefaultArtifactVersion( version );
-                if ( segment + 1 > versionComparator.getSegmentCount( lowerBound ) )
-                {
-                    getLog().info( "Ignoring " + toString( dep ) + " as the version number is too short" );
+                final DefaultArtifactVersion lowerBound = new DefaultArtifactVersion(version);
+                if (segment + 1 > versionComparator.getSegmentCount(lowerBound)) {
+                    getLog().info("Ignoring " + toString(dep) + " as the version number is too short");
                     continue;
                 }
-                ArtifactVersion upperBound =
-                    segment >= 0 ? versionComparator.incrementSegment(lowerBound, segment) : null;
-                getLog().info( "Upper bound: " + (upperBound == null ? "none" : upperBound.toString() ) );
-                ArtifactVersion[] newer = versions.getVersions( lowerBound, upperBound, true, false, false );
-                getLog().debug( "Candidate versions " + Arrays.asList( newer ) );
-                for ( int j = 0; j < newer.length; j++ )
-                {
+                ArtifactVersion upperBound = segment >= 0 ? versionComparator.incrementSegment(lowerBound, segment) : null;
+                getLog().info("Upper bound: " + (upperBound == null ? "none" : upperBound.toString()));
+                ArtifactVersion[] newer = versions.getVersions(lowerBound, upperBound, true, false, false);
+                getLog().debug("Candidate versions " + Arrays.asList(newer));
+                for (int j = 0; j < newer.length; j++) {
                     String newVersion = newer[j].toString();
-                    if ( matchSnapshotRegex.matcher( newVersion ).matches() )
-                    {
-                        if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version,
-                                                             newVersion, getProject().getModel() ) )
-                        {
-                            getLog().info( "Updated " + toString( dep ) + " to version " + newVersion );
+                    if (matchSnapshotRegex.matcher(newVersion).matches()) {
+                        if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, newVersion, getProject().getModel())) {
+                            getLog().info("Updated " + toString(dep) + " to version " + newVersion);
                         }
                         break;
                     }

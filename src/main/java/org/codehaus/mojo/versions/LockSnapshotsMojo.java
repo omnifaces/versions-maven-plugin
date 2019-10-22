@@ -44,17 +44,15 @@ import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
  * @author Paul Gier
  * @since 1.0-alpha-3
  */
-@Mojo( name = "lock-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class LockSnapshotsMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "lock-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class LockSnapshotsMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     // ------------------------------ FIELDS ------------------------------
 
     /**
      * Pattern to match a timestamped snapshot version. For example 1.0-20090128.202731-1
      */
-    public final Pattern matchSnapshotRegex = Pattern.compile( "-" + Artifact.SNAPSHOT_VERSION );
+    public final Pattern matchSnapshotRegex = Pattern.compile("-" + Artifact.SNAPSHOT_VERSION);
 
     // ------------------------------ METHODS --------------------------
 
@@ -65,84 +63,63 @@ public class LockSnapshotsMojo
      * @throws XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-        {
-            lockSnapshots( pom, getProject().getDependencyManagement().getDependencies() );
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+            lockSnapshots(pom, getProject().getDependencyManagement().getDependencies());
         }
-        if ( getProject().getDependencies() != null && isProcessingDependencies() )
-        {
-            lockSnapshots( pom, getProject().getDependencies() );
+        if (getProject().getDependencies() != null && isProcessingDependencies()) {
+            lockSnapshots(pom, getProject().getDependencies());
         }
-        if ( getProject().getParent() != null && isProcessingParent() )
-        {
-            lockParentSnapshot( pom, getProject().getParent() );
+        if (getProject().getParent() != null && isProcessingParent()) {
+            lockParentSnapshot(pom, getProject().getParent());
         }
     }
 
-    private void lockSnapshots( ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException
-    {
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+    private void lockSnapshots(ModifiedPomXMLEventReader pom, Collection<Dependency> dependencies) throws XMLStreamException, MojoExecutionException {
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
-            if ( !isIncluded( this.toArtifact( dep ) ) )
-            {
+            if (!isIncluded(this.toArtifact(dep))) {
                 continue;
             }
 
             String version = dep.getVersion();
-            Matcher versionMatcher = matchSnapshotRegex.matcher( version );
-            if ( versionMatcher.find() && versionMatcher.end() == version.length() )
-            {
-                String lockedVersion = resolveSnapshotVersion( dep );
-                if ( !version.equals( lockedVersion ) )
-                {
-                    if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), version,
-                                                         lockedVersion, getProject().getModel() ) )
-                    {
-                        getLog().info( "Locked " + toString( dep ) + " to version " + lockedVersion );
+            Matcher versionMatcher = matchSnapshotRegex.matcher(version);
+            if (versionMatcher.find() && versionMatcher.end() == version.length()) {
+                String lockedVersion = resolveSnapshotVersion(dep);
+                if (!version.equals(lockedVersion)) {
+                    if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), version, lockedVersion, getProject().getModel())) {
+                        getLog().info("Locked " + toString(dep) + " to version " + lockedVersion);
                     }
                 }
             }
         }
     }
 
-    private void lockParentSnapshot( ModifiedPomXMLEventReader pom, MavenProject parent )
-        throws XMLStreamException, MojoExecutionException
-    {
-        if ( parent == null )
-        {
-            getLog().info( "Project does not have a parent" );
+    private void lockParentSnapshot(ModifiedPomXMLEventReader pom, MavenProject parent) throws XMLStreamException, MojoExecutionException {
+        if (parent == null) {
+            getLog().info("Project does not have a parent");
             return;
         }
 
-        if ( reactorProjects.contains( parent ) )
-        {
-            getLog().info( "Project's parent is part of the reactor" );
+        if (reactorProjects.contains(parent)) {
+            getLog().info("Project's parent is part of the reactor");
             return;
         }
 
         Artifact parentArtifact = parent.getArtifact();
         String parentVersion = parentArtifact.getVersion();
 
-        Matcher versionMatcher = matchSnapshotRegex.matcher( parentVersion );
-        if ( versionMatcher.find() && versionMatcher.end() == parentVersion.length() )
-        {
-            String lockedParentVersion = resolveSnapshotVersion( parentArtifact );
-            if ( !parentVersion.equals( lockedParentVersion ) )
-            {
-                if ( PomHelper.setProjectParentVersion( pom, lockedParentVersion ) )
-                {
-                    getLog().info( "Locked parent " + parentArtifact.toString() + " to version "
-                        + lockedParentVersion );
+        Matcher versionMatcher = matchSnapshotRegex.matcher(parentVersion);
+        if (versionMatcher.find() && versionMatcher.end() == parentVersion.length()) {
+            String lockedParentVersion = resolveSnapshotVersion(parentArtifact);
+            if (!parentVersion.equals(lockedParentVersion)) {
+                if (PomHelper.setProjectParentVersion(pom, lockedParentVersion)) {
+                    getLog().info("Locked parent " + parentArtifact.toString() + " to version " + lockedParentVersion);
                 }
             }
         }
@@ -154,21 +131,17 @@ public class LockSnapshotsMojo
      * @param artifact
      * @return The timestamp version if exists, otherwise the original snapshot artifact version is returned.
      */
-    private String resolveSnapshotVersion( Artifact artifact )
-    {
-        getLog().debug( "Resolving snapshot version for artifact: " + artifact );
+    private String resolveSnapshotVersion(Artifact artifact) {
+        getLog().debug("Resolving snapshot version for artifact: " + artifact);
 
         String lockedVersion = artifact.getVersion();
 
-        try
-        {
-            resolver.resolve( artifact, getProject().getRemoteArtifactRepositories(), localRepository );
+        try {
+            resolver.resolve(artifact, getProject().getRemoteArtifactRepositories(), localRepository);
 
             lockedVersion = artifact.getVersion();
-        }
-        catch ( Exception e )
-        {
-            getLog().error( e );
+        } catch (Exception e) {
+            getLog().error(e);
         }
         return lockedVersion;
     }
@@ -179,25 +152,19 @@ public class LockSnapshotsMojo
      * @param dep
      * @return The timestamp version if exists, otherwise the original snapshot dependency version is returned.
      */
-    private String resolveSnapshotVersion( Dependency dep )
-    {
-        getLog().debug( "Resolving snapshot version for dependency: " + dep );
+    private String resolveSnapshotVersion(Dependency dep) {
+        getLog().debug("Resolving snapshot version for dependency: " + dep);
 
         String lockedVersion = dep.getVersion();
 
-        try
-        {
-            Artifact depArtifact =
-                artifactFactory.createDependencyArtifact( dep.getGroupId(), dep.getArtifactId(),
-                                                          VersionRange.createFromVersionSpec( dep.getVersion() ),
-                                                          dep.getType(), dep.getClassifier(), dep.getScope() );
-            resolver.resolve( depArtifact, getProject().getRemoteArtifactRepositories(), localRepository );
+        try {
+            Artifact depArtifact = artifactFactory.createDependencyArtifact(dep.getGroupId(), dep.getArtifactId(),
+                    VersionRange.createFromVersionSpec(dep.getVersion()), dep.getType(), dep.getClassifier(), dep.getScope());
+            resolver.resolve(depArtifact, getProject().getRemoteArtifactRepositories(), localRepository);
 
             lockedVersion = depArtifact.getVersion();
-        }
-        catch ( Exception e )
-        {
-            getLog().error( e );
+        } catch (Exception e) {
+            getLog().error(e);
         }
         return lockedVersion;
     }

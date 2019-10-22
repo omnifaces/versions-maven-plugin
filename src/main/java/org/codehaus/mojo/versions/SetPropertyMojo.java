@@ -1,5 +1,9 @@
 package org.codehaus.mojo.versions;
 
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,9 +31,6 @@ import org.codehaus.mojo.versions.api.PomHelper;
 import org.codehaus.mojo.versions.api.PropertyVersions;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Map;
-
 /**
  * Set a property to a given version without any sanity checks. Please be careful this can lead to changes which might
  * not build anymore. The sanity checks are done by other goals like <code>update-properties</code> or
@@ -38,29 +39,27 @@ import java.util.Map;
  * @author Karl Heinz Marbaise
  * @since 2.5
  */
-@Mojo( name = "set-property", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class SetPropertyMojo
-    extends AbstractVersionsUpdaterMojo
-{
+@Mojo(name = "set-property", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class SetPropertyMojo extends AbstractVersionsUpdaterMojo {
 
     // ------------------------------ FIELDS ------------------------------
 
     /**
      * A property to update.
      */
-    @Parameter( property = "property" )
+    @Parameter(property = "property")
     private String property = null;
 
     /**
      * The new version to set the property.
      */
-    @Parameter( property = "newVersion" )
+    @Parameter(property = "newVersion")
     private String newVersion = null;
 
     /**
      * Whether properties linking versions should be auto-detected or not.
      */
-    @Parameter( property = "autoLinkItems", defaultValue = "true" )
+    @Parameter(property = "autoLinkItems", defaultValue = "true")
     private boolean autoLinkItems;
 
     /**
@@ -70,26 +69,22 @@ public class SetPropertyMojo
      * @throws XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
-        Property propertyConfig = new Property( property );
-        propertyConfig.setVersion( newVersion );
-        Map<Property, PropertyVersions> propertyVersions =
-            this.getHelper().getVersionPropertiesMap( getProject(), new Property[] { propertyConfig }, property, "",
-                                                      autoLinkItems );
-        for ( Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet() )
-        {
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
+        Property propertyConfig = new Property(property);
+        propertyConfig.setVersion(newVersion);
+        Map<Property, PropertyVersions> propertyVersions = this.getHelper().getVersionPropertiesMap(getProject(), new Property[] { propertyConfig }, property,
+                "", autoLinkItems);
+        for (Map.Entry<Property, PropertyVersions> entry : propertyVersions.entrySet()) {
             Property property = entry.getKey();
             PropertyVersions version = entry.getValue();
 
-            final String currentVersion = getProject().getProperties().getProperty( property.getName() );
-            if ( currentVersion == null )
-            {
+            final String currentVersion = getProject().getProperties().getProperty(property.getName());
+            if (currentVersion == null) {
                 continue;
             }
 
-            PomHelper.setPropertyVersion( pom, version.getProfileId(), property.getName(), newVersion );
+            PomHelper.setPropertyVersion(pom, version.getProfileId(), property.getName(), newVersion);
 
         }
     }

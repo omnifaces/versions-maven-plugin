@@ -1,5 +1,11 @@
 package org.codehaus.mojo.versions;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.stream.XMLStreamException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -28,11 +34,6 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.mojo.versions.api.PomHelper;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Attempts to resolve unlocked snapshot dependency versions to the locked timestamp versions used in the build. For
  * example, an unlocked snapshot version like "1.0-SNAPSHOT" could be resolved to "1.0-20090128.202731-1". If a
@@ -42,17 +43,15 @@ import java.util.regex.Pattern;
  * @author Paul Gier
  * @since 1.0-alpha-3
  */
-@Mojo( name = "unlock-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true )
-public class UnlockSnapshotsMojo
-    extends AbstractVersionsDependencyUpdaterMojo
-{
+@Mojo(name = "unlock-snapshots", requiresProject = true, requiresDirectInvocation = true, threadSafe = true)
+public class UnlockSnapshotsMojo extends AbstractVersionsDependencyUpdaterMojo {
 
     // ------------------------------ FIELDS ------------------------------
 
     /**
      * Pattern to match a timestamped snapshot version. For example 1.0-20090128.202731-1
      */
-    public final Pattern matchSnapshotRegex = Pattern.compile( "-(\\d{8}\\.\\d{6})-(\\d+)$" );
+    public final Pattern matchSnapshotRegex = Pattern.compile("-(\\d{8}\\.\\d{6})-(\\d+)$");
 
     // ------------------------------ METHODS --------------------------
 
@@ -63,80 +62,61 @@ public class UnlockSnapshotsMojo
      * @throws XMLStreamException when things go wrong with XML streaming
      * @see AbstractVersionsUpdaterMojo#update(ModifiedPomXMLEventReader)
      */
-    protected void update( ModifiedPomXMLEventReader pom )
-        throws MojoExecutionException, MojoFailureException, XMLStreamException
-    {
+    @Override
+    protected void update(ModifiedPomXMLEventReader pom) throws MojoExecutionException, MojoFailureException, XMLStreamException {
 
-        if ( getProject().getDependencyManagement() != null && isProcessingDependencyManagement() )
-        {
-            unlockSnapshots( pom, getProject().getDependencyManagement().getDependencies() );
+        if (getProject().getDependencyManagement() != null && isProcessingDependencyManagement()) {
+            unlockSnapshots(pom, getProject().getDependencyManagement().getDependencies());
         }
-        if ( getProject().getDependencies() != null && isProcessingDependencies() )
-        {
-            unlockSnapshots( pom, getProject().getDependencies() );
+        if (getProject().getDependencies() != null && isProcessingDependencies()) {
+            unlockSnapshots(pom, getProject().getDependencies());
         }
-        if ( getProject().getParent() != null && isProcessingParent() )
-        {
-            unlockParentSnapshot( pom, getProject().getParent() );
+        if (getProject().getParent() != null && isProcessingParent()) {
+            unlockParentSnapshot(pom, getProject().getParent());
         }
     }
 
-    private void unlockSnapshots( ModifiedPomXMLEventReader pom, List<Dependency> dependencies )
-        throws XMLStreamException, MojoExecutionException
-    {
-        for ( Dependency dep : dependencies )
-        {
-            if ( isExcludeReactor() && isProducedByReactor( dep ) )
-            {
-                getLog().info( "Ignoring reactor dependency: " + toString( dep ) );
+    private void unlockSnapshots(ModifiedPomXMLEventReader pom, List<Dependency> dependencies) throws XMLStreamException, MojoExecutionException {
+        for (Dependency dep : dependencies) {
+            if (isExcludeReactor() && isProducedByReactor(dep)) {
+                getLog().info("Ignoring reactor dependency: " + toString(dep));
                 continue;
             }
 
-            if ( !isIncluded( this.toArtifact( dep ) ) )
-            {
+            if (!isIncluded(this.toArtifact(dep))) {
                 continue;
             }
 
             String version = dep.getVersion();
-            Matcher versionMatcher = matchSnapshotRegex.matcher( version );
-            if ( versionMatcher.find() && versionMatcher.end() == version.length() )
-            {
-                String unlockedVersion = versionMatcher.replaceFirst( "-SNAPSHOT" );
-                if ( PomHelper.setDependencyVersion( pom, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(),
-                                                     unlockedVersion, getProject().getModel() ) )
-                {
-                    getLog().info( "Unlocked " + toString( dep ) + " to version " + unlockedVersion );
+            Matcher versionMatcher = matchSnapshotRegex.matcher(version);
+            if (versionMatcher.find() && versionMatcher.end() == version.length()) {
+                String unlockedVersion = versionMatcher.replaceFirst("-SNAPSHOT");
+                if (PomHelper.setDependencyVersion(pom, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), unlockedVersion, getProject().getModel())) {
+                    getLog().info("Unlocked " + toString(dep) + " to version " + unlockedVersion);
                 }
             }
         }
     }
 
-    private void unlockParentSnapshot( ModifiedPomXMLEventReader pom, MavenProject parent )
-        throws XMLStreamException, MojoExecutionException
-    {
-        if ( parent == null )
-        {
-            getLog().info( "Project does not have a parent" );
+    private void unlockParentSnapshot(ModifiedPomXMLEventReader pom, MavenProject parent) throws XMLStreamException, MojoExecutionException {
+        if (parent == null) {
+            getLog().info("Project does not have a parent");
             return;
         }
 
-        if ( reactorProjects.contains( parent ) )
-        {
-            getLog().info( "Project's parent is part of the reactor" );
+        if (reactorProjects.contains(parent)) {
+            getLog().info("Project's parent is part of the reactor");
             return;
         }
 
         Artifact parentArtifact = parent.getArtifact();
         String parentVersion = parentArtifact.getVersion();
 
-        Matcher versionMatcher = matchSnapshotRegex.matcher( parentVersion );
-        if ( versionMatcher.find() && versionMatcher.end() == parentVersion.length() )
-        {
-            String unlockedParentVersion = versionMatcher.replaceFirst( "-SNAPSHOT" );
-            if ( PomHelper.setProjectParentVersion( pom, unlockedParentVersion ) )
-            {
-                getLog().info( "Unlocked parent " + parentArtifact.toString() + " to version "
-                    + unlockedParentVersion );
+        Matcher versionMatcher = matchSnapshotRegex.matcher(parentVersion);
+        if (versionMatcher.find() && versionMatcher.end() == parentVersion.length()) {
+            String unlockedParentVersion = versionMatcher.replaceFirst("-SNAPSHOT");
+            if (PomHelper.setProjectParentVersion(pom, unlockedParentVersion)) {
+                getLog().info("Unlocked parent " + parentArtifact.toString() + " to version " + unlockedParentVersion);
             }
         }
     }

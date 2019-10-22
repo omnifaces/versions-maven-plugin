@@ -37,10 +37,8 @@ import org.codehaus.mojo.versions.api.PropertyVersions;
  * @author Stephen Connolly
  * @since 1.0-beta-1
  */
-@Mojo( name = "property-updates-report", requiresProject = true, requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true )
-public class PropertyUpdatesReport
-    extends AbstractVersionsReport
-{
+@Mojo(name = "property-updates-report", requiresProject = true, requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
+public class PropertyUpdatesReport extends AbstractVersionsReport {
 
     /**
      * Any restrictions that apply to specific properties.
@@ -55,7 +53,7 @@ public class PropertyUpdatesReport
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "includeProperties" )
+    @Parameter(property = "includeProperties")
     private String includeProperties = null;
 
     /**
@@ -63,7 +61,7 @@ public class PropertyUpdatesReport
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "excludeProperties" )
+    @Parameter(property = "excludeProperties")
     private String excludeProperties = null;
 
     /**
@@ -71,53 +69,46 @@ public class PropertyUpdatesReport
      *
      * @since 1.0-beta-1
      */
-    @Parameter( property = "autoLinkItems", defaultValue = "true" )
+    @Parameter(property = "autoLinkItems", defaultValue = "true")
     private boolean autoLinkItems;
 
     /**
      * {@inheritDoc}
      */
-    public boolean isExternalReport()
-    {
+    @Override
+    public boolean isExternalReport() {
         return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public boolean canGenerateReport()
-    {
+    @Override
+    public boolean canGenerateReport() {
         return haveBuildProperties();
     }
 
-    private boolean haveBuildProperties()
-    {
+    private boolean haveBuildProperties() {
         return getProject().getProperties() != null && !getProject().getProperties().isEmpty();
     }
 
-    protected void doGenerateReport( Locale locale, Sink sink )
-        throws MavenReportException
-    {
+    @Override
+    protected void doGenerateReport(Locale locale, Sink sink) throws MavenReportException {
         final Map<Property, PropertyVersions> updateSet;
-        try
-        {
-            updateSet = getHelper().getVersionPropertiesMap( getProject(), properties, includeProperties,
-                                                             excludeProperties, autoLinkItems );
+        try {
+            updateSet = getHelper().getVersionPropertiesMap(getProject(), properties, includeProperties, excludeProperties, autoLinkItems);
+        } catch (MojoExecutionException e) {
+            throw new MavenReportException(e.getMessage(), e);
         }
-        catch ( MojoExecutionException e )
-        {
-            throw new MavenReportException( e.getMessage(), e );
-        }
-        PropertyUpdatesRenderer renderer =
-            new PropertyUpdatesRenderer( sink, getI18n(), getOutputName(), locale, updateSet );
+        PropertyUpdatesRenderer renderer = new PropertyUpdatesRenderer(sink, getI18n(), getOutputName(), locale, updateSet);
         renderer.render();
     }
 
     /**
      * {@inheritDoc}
      */
-    public String getOutputName()
-    {
+    @Override
+    public String getOutputName() {
         return "property-updates-report";
     }
 }
