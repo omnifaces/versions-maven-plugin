@@ -189,7 +189,9 @@ public class DefaultVersionsHelper implements VersionsHelper {
      * @param rulesUri The URL to retrieve the versioning rules from.
      * @param log The {@link org.apache.maven.plugin.logging.Log} to send log messages to.
      * @param mavenSession The maven session information.
-     * @param pathTranslator The path translator component. @throws org.apache.maven.plugin.MojoExecutionException If things
+     * @param pathTranslator The path translator component. 
+     * 
+     * @throws org.apache.maven.plugin.MojoExecutionException If things
      * go wrong.
      * @since 1.0-alpha-3
      */

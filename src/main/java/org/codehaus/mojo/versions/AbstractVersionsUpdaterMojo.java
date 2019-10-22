@@ -1,5 +1,8 @@
 package org.codehaus.mojo.versions;
 
+import static org.codehaus.mojo.versions.api.PomHelper.readXmlFile;
+import static org.codehaus.plexus.util.FileUtils.copyFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -53,7 +56,6 @@ import org.codehaus.mojo.versions.api.PomHelper;
 import org.codehaus.mojo.versions.api.PropertyVersions;
 import org.codehaus.mojo.versions.api.VersionsHelper;
 import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
-import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.stax2.XMLInputFactory2;
@@ -289,7 +291,7 @@ public abstract class AbstractVersionsUpdaterMojo extends AbstractMojo {
      */
     protected void process(File outFile) throws MojoExecutionException, MojoFailureException {
         try {
-            StringBuilder input = PomHelper.readXmlFile(outFile);
+            StringBuilder input = readXmlFile(outFile);
             ModifiedPomXMLEventReader newPom = newModifiedPomXER(input);
 
             update(newPom);
@@ -299,7 +301,7 @@ public abstract class AbstractVersionsUpdaterMojo extends AbstractMojo {
                     File backupFile = new File(outFile.getParentFile(), outFile.getName() + ".versionsBackup");
                     if (!backupFile.exists()) {
                         getLog().debug("Backing up " + outFile + " to " + backupFile);
-                        FileUtils.copyFile(outFile, backupFile);
+                        copyFile(outFile, backupFile);
                     } else {
                         getLog().debug("Leaving existing backup " + backupFile + " unmodified");
                     }
